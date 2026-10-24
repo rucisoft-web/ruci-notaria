@@ -55,10 +55,10 @@ class SitusDemoTest extends TestCase
 
     public function test_tombol_tamu_hanya_muncul_di_situs_demo(): void
     {
-        $this->get('/app/login')->assertOk()->assertSee('Masuk sebagai tamu');
+        $this->get('/app/login')->assertOk()->assertSee('Masuk ke Ruci Notaria')->assertSee('Masuk sebagai Tamu');
 
         config(['notaria.demo.tamu' => false]);
-        $this->get('/app/login')->assertOk()->assertDontSee('Masuk sebagai tamu');
+        $this->get('/app/login')->assertOk()->assertDontSee('Masuk sebagai Tamu');
         $this->post(route('tamu.masuk'))->assertNotFound();
     }
 
@@ -79,6 +79,27 @@ class SitusDemoTest extends TestCase
         // Akun tamu tidak dapat dipakai bila situs bukan lagi situs demo.
         config(['notaria.demo.enabled' => false]);
         $this->assertFalse($tamu->canAccessPanel(filament()->getPanel('app')));
+    }
+
+    /** Tamu memilih notaris contoh di form masuk dan dapat menggantinya dari pita di atas panel. */
+    public function test_tamu_memilih_notaris_contoh(): void
+    {
+        $this->travelTo('2026-10-24 09:00');
+        $this->seed(DemoSeeder::class);
+        $this->get('/app/login')->assertOk()->assertSee('Pilih notaris contoh')->assertSee('Bambang Hartono')->assertSee('Kab. Bandung Barat');
+
+        $this->post(route('tamu.masuk'), ['notaris' => 'BH'])->assertRedirect('/app');
+        $this->assertSame('BH', Jabatan::utama()->kode);
+        $this->get('/app/buku-daftar')->assertOk()->assertSee('Tamu · hanya lihat')->assertSee(route('tamu.notaris', 'AP'));
+
+        $this->from('/app/buku-daftar')->get(route('tamu.notaris', 'AP'))->assertRedirect('/app/buku-daftar');
+        $this->assertSame('AP', Jabatan::utama()->kode);
+
+        // Pilihan notaris hanya berlaku untuk tamu.
+        $this->flushSession();
+        $this->actingAs(User::where('email', 'notaris2@notaria.demo')->first());
+        $this->get(route('tamu.notaris', 'AP'))->assertNotFound();
+        $this->assertSame('RK', Jabatan::utama()->kode);
     }
 
     /** Tamu melihat semua layar data (tanpa galat), tetapi halaman buat/ubah, tombol pengubah, dan penyimpanan ditolak. */

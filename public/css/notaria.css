@@ -1,7 +1,8 @@
 /* Ruci Notaria: dasbor, buku daftar, dan hasil pemeriksaan. Tanpa pustaka eksternal. */
 :root {
-    --nt-teal: #174f49;
-    --nt-gold: #b8893a;
+    --nt-teal: #0b3a5c;
+    --nt-navy: #0b3a5c;
+    --nt-gold: #c9963e;
     --nt-card: #ffffff;
     --nt-text: #1f2d2b;
     --nt-muted: #687b78;
@@ -57,7 +58,7 @@
 .nt-bar { display: grid; grid-template-columns: 150px 1fr 32px; gap: 8px; align-items: center; margin: 8px 0; font-size: .8rem; }
 .nt-bar .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nt-bar .track { height: 10px; background: var(--nt-track); border-radius: 8px; overflow: hidden; }
-.nt-bar .fill { display: block; height: 100%; background: linear-gradient(90deg, var(--nt-teal), #45958c); border-radius: 8px; }
+.nt-bar .fill { display: block; height: 100%; background: linear-gradient(90deg, var(--nt-teal), #2f6a9c); border-radius: 8px; }
 .nt-bar b { text-align: right; }
 
 /* Hasil pemeriksaan kesiapan akta dan draf. */
@@ -89,17 +90,93 @@
 .dark .nt-contoh { background: #3a2f12; color: #f3dfa6; border-color: #5c4a1c; }
 
 /* Masuk sebagai tamu di halaman login. */
-.nt-tamu { margin-top: 4px; }
-.nt-tamu-garis { display: flex; align-items: center; gap: 10px; color: #8a9896; font-size: .8rem; margin: 6px 0 14px; }
-.nt-tamu-garis::before, .nt-tamu-garis::after { content: ""; flex: 1; border-top: 1px solid #e2e8e7; }
-.nt-tamu-tombol { width: 100%; padding: 9px 14px; border-radius: 8px; border: 1px solid #174f49; background: #fff; color: #174f49; font-weight: 600; font-size: .875rem; cursor: pointer; }
-.nt-tamu-tombol:hover { background: #eef6f5; }
-.dark .nt-tamu-tombol { background: transparent; color: #a7d2cc; border-color: #45958c; }
-.nt-tamu-info { margin-top: 14px; font-size: .8rem; color: #4b5c5a; line-height: 1.5; background: #f5f9f8; border-radius: 8px; padding: 12px 14px; }
-.dark .nt-tamu-info { background: rgb(39 39 42); color: #c9d4d2; }
-.nt-tamu-info ul { list-style: disc; padding-left: 18px; margin: 6px 0; }
-.nt-tamu-info p { margin: 0; }
-.nt-tamu-kecil { margin-top: 8px !important; font-size: .72rem; color: #7a8a88; }
-.nt-tautan-panduan { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 14px; font-size: .82rem; }
-.nt-tautan-panduan a { color: #0b3a5c; text-decoration: underline; text-underline-offset: 2px; }
-.dark .nt-tautan-panduan a { color: #9cc7e8; }
+/* Halaman masuk: panel merek terang di kiri, formulir di kanan. Hanya CSS, tanpa gambar atau font tambahan. */
+.fi-simple-layout:has(.nt-masuk-merek) { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; align-items: stretch; justify-content: stretch; background: #fff; }
+.dark .fi-simple-layout:has(.nt-masuk-merek) { background: #0f141a; }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main-ctn { display: flex; align-items: center; justify-content: center; padding: 40px 24px; min-width: 0; }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main { width: 100%; max-width: 420px; margin: 0; border-radius: 16px; position: relative; z-index: 2; border: 1px solid #e9edf1; box-shadow: 0 1px 2px #0b3a5c0f, 0 12px 40px #0b3a5c14; }
+.dark .fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main { border-color: #ffffff14; }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main::before { content: ""; position: absolute; top: -1px; left: 28px; right: 28px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--nt-gold), transparent); }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main .fi-logo { display: none; }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-header-heading { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif; font-weight: 500; font-size: 1.7rem; letter-spacing: -.01em; color: var(--nt-navy); }
+.dark .fi-simple-layout:has(.nt-masuk-merek) .fi-simple-header-heading { color: #e6edf3; }
+.fi-simple-layout:has(.nt-masuk-merek) .fi-simple-header-subheading { color: #6b7a87; font-size: .88rem; }
+
+.nt-masuk-merek { position: relative; overflow: hidden; background: #f7f5f0; color: var(--nt-navy); padding: 48px 64px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; border-right: 1px solid #ebe6dc; min-width: 0; }
+.dark .nt-masuk-merek { background: #131a22; color: #e6edf3; border-right-color: #ffffff12; }
+.nt-masuk-merek > *:not(.nt-masuk-garis) { position: relative; z-index: 1; }
+.nt-masuk-logo img { height: 48px; width: auto; }
+.nt-masuk-logo .nt-logo-gelap, .dark .nt-masuk-logo .nt-logo-terang { display: none; }
+.dark .nt-masuk-logo .nt-logo-gelap { display: block; }
+.nt-masuk-isi { max-width: 460px; }
+.nt-masuk-pita { margin: 0 0 18px; color: #9a7531; font-size: .72rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+.dark .nt-masuk-pita { color: var(--nt-gold); }
+.nt-masuk-isi h2 { margin: 0 0 16px; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif; font-size: 2.55rem; line-height: 1.15; font-weight: 500; letter-spacing: -.01em; }
+.nt-masuk-lead { margin: 0 0 30px; font-size: .98rem; line-height: 1.65; color: #4f6273; max-width: 420px; }
+.dark .nt-masuk-lead { color: #9fb0bf; }
+.nt-masuk-isi ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; }
+.nt-masuk-isi li { display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #e3ddd0; font-size: .9rem; color: #2c3e4f; }
+.dark .nt-masuk-isi li { border-top-color: #ffffff1a; color: #cdd8e2; }
+.nt-masuk-isi li span { font-size: .7rem; font-weight: 600; color: #9a7531; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.nt-masuk-kaki { margin: 0; font-size: .76rem; color: #8a96a1; letter-spacing: .02em; }
+/* Garis halus: kisi tipis dan busur konsentris samar di pojok kanan bawah, seperti cap di atas kertas akta. */
+.nt-masuk-garis { position: absolute; inset: 0; pointer-events: none; background:
+    radial-gradient(circle at 105% 108%, transparent 0 160px, #c9963e33 160px 161px, transparent 161px 220px, #0b3a5c14 220px 221px, transparent 221px 280px, #0b3a5c0f 280px 281px, transparent 281px 340px, #0b3a5c0a 340px 341px, transparent 341px),
+    repeating-linear-gradient(90deg, #0b3a5c07 0 1px, transparent 1px 56px),
+    repeating-linear-gradient(0deg, #0b3a5c07 0 1px, transparent 1px 56px); }
+.dark .nt-masuk-garis { opacity: .5; filter: invert(1); }
+
+@media (max-width: 900px) {
+    .fi-simple-layout:has(.nt-masuk-merek) { grid-template-columns: minmax(0, 1fr); align-content: start; background: #f7f5f0; }
+    .dark .fi-simple-layout:has(.nt-masuk-merek) { background: #131a22; }
+    .nt-masuk-merek { padding: 28px 24px 16px; gap: 0; border-right: 0; background: transparent; align-items: center; }
+    .nt-masuk-isi, .nt-masuk-kaki, .nt-masuk-garis { display: none; }
+    .nt-masuk-logo img { height: 40px; }
+    .fi-simple-layout:has(.nt-masuk-merek) .fi-simple-main-ctn { align-items: flex-start; padding: 8px 16px 40px; }
+}
+
+/* Bagian bawah formulir masuk: pilihan tamu, tautan panduan. */
+.nt-masuk-tambahan { margin-top: 4px; display: grid; gap: 16px; }
+.nt-masuk-pemisah { display: flex; align-items: center; gap: 12px; color: #8a96a1; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+.nt-masuk-pemisah::before, .nt-masuk-pemisah::after { content: ""; flex: 1; height: 1px; background: #e3ddd0; }
+.dark .nt-masuk-pemisah::before, .dark .nt-masuk-pemisah::after { background: #ffffff1a; }
+.nt-tamu-form { display: grid; gap: 12px; }
+.nt-tamu-form fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.nt-tamu-form legend { padding: 0; margin-bottom: 8px; font-size: .82rem; font-weight: 600; color: #2c3e4f; }
+.dark .nt-tamu-form legend { color: #cdd8e2; }
+.nt-tamu-pilihan { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.nt-tamu-pilihan label { position: relative; cursor: pointer; min-width: 0; }
+.nt-tamu-pilihan input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.nt-tamu-pilihan label > span { display: flex; flex-direction: column; gap: 2px; height: 100%; padding: 10px 12px; border: 1px solid #e3ddd0; border-radius: 10px; background: #fff; transition: border-color .15s, box-shadow .15s, background .15s; }
+.nt-tamu-pilihan b { font-size: .82rem; font-weight: 600; color: var(--nt-navy); line-height: 1.25; }
+.nt-tamu-pilihan small { font-size: .7rem; color: #8a96a1; line-height: 1.3; }
+.nt-tamu-pilihan label:hover > span { border-color: #c9b98f; }
+.nt-tamu-pilihan label:has(input:checked) > span { border-color: var(--nt-gold); background: #fbf7ee; box-shadow: 0 0 0 1px var(--nt-gold); }
+.nt-tamu-pilihan input:focus-visible + span { outline: 2px solid var(--nt-navy); outline-offset: 2px; }
+.dark .nt-tamu-pilihan label > span { background: #ffffff08; border-color: #ffffff1f; }
+.dark .nt-tamu-pilihan b { color: #e6edf3; }
+.dark .nt-tamu-pilihan label:has(input:checked) > span { background: #c9963e1a; }
+.nt-tamu-tombol { width: 100%; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--nt-navy); background: #fff; color: var(--nt-navy); font-weight: 600; font-size: .9rem; cursor: pointer; transition: background .15s, color .15s; }
+.nt-tamu-tombol:hover { background: var(--nt-navy); color: #fff; }
+.dark .nt-tamu-tombol { background: transparent; border-color: #9fb0bf; color: #e6edf3; }
+.dark .nt-tamu-tombol:hover { background: #ffffff14; }
+.nt-tamu-catatan { margin: 0; font-size: .74rem; line-height: 1.5; color: #8a96a1; text-align: center; }
+.nt-masuk-pelajari { justify-self: center; text-align: center; font-size: .86rem; font-weight: 600; color: #9a7531; text-decoration: none; }
+.nt-masuk-panduan { justify-self: center; margin-top: -10px; font-size: .8rem; color: #6b7a87; text-decoration: underline; text-underline-offset: 3px; }
+.nt-masuk-pelajari:hover { text-decoration: underline; text-underline-offset: 3px; }
+.dark .nt-masuk-pelajari { color: var(--nt-gold); }
+.dark .nt-masuk-panduan { color: #9fb0bf; }
+.nt-masuk-percaya { margin: 0; padding-top: 14px; border-top: 1px solid #ebe6dc; text-align: center; font-size: .7rem; letter-spacing: .02em; color: #8a96a1; }
+.dark .nt-masuk-percaya { border-top-color: #ffffff12; }
+@media (max-width: 480px) {
+    .nt-tamu-pilihan { grid-template-columns: minmax(0, 1fr); }
+    .nt-tamu-pilihan label > span { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 8px; }
+}
+
+/* Pita notaris contoh untuk tamu, di bawah pita DATA CONTOH. */
+.nt-pita-tamu { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; padding: 7px 20px; background: var(--nt-navy); color: #dfe8ef; font-size: .8rem; }
+.nt-pita-tamu .label { padding: 2px 10px; border-radius: 999px; background: var(--nt-gold); color: #1b1408; font-weight: 700; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; }
+.nt-pita-tamu nav { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-left: auto; }
+.nt-pita-tamu a { color: #dfe8ef; text-decoration: none; opacity: .8; }
+.nt-pita-tamu a:hover { opacity: 1; text-decoration: underline; }
+.nt-pita-tamu a.aktif { opacity: 1; font-weight: 700; color: #fff; box-shadow: inset 0 -2px 0 var(--nt-gold); }

@@ -1,21 +1,26 @@
-<div class="nt-tamu">
+<div class="nt-masuk-tambahan">
     @if ($tamu)
-        <div class="nt-tamu-garis"><span>atau</span></div>
-        <form method="POST" action="{{ route('tamu.masuk') }}">
+        <div class="nt-masuk-pemisah"><span>atau coba tanpa akun</span></div>
+        <form class="nt-tamu-form" method="POST" action="{{ route('tamu.masuk') }}">
             @csrf
-            <button type="submit" class="nt-tamu-tombol">Masuk sebagai tamu (hanya lihat)</button>
+            @if ($notaris->isNotEmpty())
+            <fieldset>
+                <legend>Pilih notaris contoh</legend>
+                <div class="nt-tamu-pilihan">
+                    @foreach ($notaris as $j)
+                        <label>
+                            <input type="radio" name="notaris" value="{{ $j->kode }}" @checked($loop->first)>
+                            <span><b>{{ $j->nama }}</b><small>{{ str_replace('Kabupaten', 'Kab.', $j->tempat_kedudukan) }}</small></span>
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
+            @endif
+            <button type="submit" class="nt-tamu-tombol">Masuk sebagai Tamu</button>
+            <p class="nt-tamu-catatan">Mode hanya lihat dengan data contoh fiktif. Notaris dapat diganti kapan saja dari pita di atas layar.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
         </form>
-        @include('filament.tautan-panduan')
-        <div class="nt-tamu-info">
-            <p><b>Coba tanpa mendaftar.</b> Anda melihat kantor fiktif dengan tiga notaris di Bandung, Cimahi, dan Bandung Barat, lengkap dengan data contoh.</p>
-            <ul>
-                <li>Lihat dasbor tenggat, register akta, buku daftar, dan paket laporan bulanan MPD.</li>
-                <li>Telusuri alur akta: penghadap dan saksi, draf, pemeriksaan kesiapan, nomor, salinan, dan grosse.</li>
-                <li>Buka cetakan repertorium, klapper, legalisasi, tagihan, kuitansi, dan label jilid minuta.</li>
-            </ul>
-            <p class="nt-tamu-kecil">Akun tamu hanya dapat melihat. Tombol tambah, ubah, hapus, dan beri nomor disembunyikan, dan data tidak dapat diubah.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
-        </div>
-    @else
-        @include('filament.tautan-panduan')
     @endif
+    <a class="nt-masuk-pelajari" href="{{ route('panduan.mengapa') }}">Mengapa notaris memerlukan Ruci Notaria <span aria-hidden="true">→</span></a>
+    <a class="nt-masuk-panduan" href="{{ route('panduan.penggunaan') }}">Panduan penggunaan</a>
+    <p class="nt-masuk-percaya">Terenkripsi · Akses berbasis peran · Jejak audit berantai</p>
 </div>

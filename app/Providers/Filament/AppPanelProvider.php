@@ -2,9 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Login;
 use App\Filament\Pages\Dasbor;
 use App\Http\Controllers\TamuController;
 use App\Http\Middleware\BatasiTamu;
+use App\Models\Jabatan;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -31,7 +33,7 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('app')
-            ->login()
+            ->login(Login::class)
             ->passwordReset()
             ->profile()
             ->brandName(fn () => 'Ruci Notaria')
@@ -40,10 +42,10 @@ class AppPanelProvider extends PanelProvider
             ->brandLogoHeight('2.5rem')
             ->favicon(asset('favicon.svg'))
             ->colors([
-                // Hijau tua kebiruan dengan aksen emas: kesan resmi dan tenang untuk kantor notaris.
+                // Biru tua logo dengan aksen emas: kesan resmi dan tenang untuk kantor notaris.
                 'primary' => [
-                    50 => '#eef6f5', 100 => '#d3e9e6', 200 => '#a7d2cc', 300 => '#74b5ad', 400 => '#45958c',
-                    500 => '#2a7a71', 600 => '#1d635b', 700 => '#174f49', 800 => '#123f3a', 900 => '#0e322e', 950 => '#07201d',
+                    50 => '#eef4f9', 100 => '#d6e4f0', 200 => '#adc9e1', 300 => '#7ea8cc', 400 => '#4f86b4',
+                    500 => '#2f6a9c', 600 => '#1f5785', 700 => '#15466d', 800 => '#0b3a5c', 900 => '#082c47', 950 => '#051c2e',
                 ],
                 'warning' => Color::Amber,
             ])
@@ -67,7 +69,13 @@ class AppPanelProvider extends PanelProvider
             ->maxContentWidth('full')
             ->globalSearch(false)
             ->renderHook(PanelsRenderHook::BODY_START, fn () => config('notaria.demo.enabled') ? view('filament.label-data-contoh') : '')
-            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.masuk-tamu', ['tamu' => TamuController::tersedia()]))
+            ->renderHook(PanelsRenderHook::BODY_START, fn () => auth()->user()?->isTamu() && TamuController::tersedia()
+                ? view('filament.pita-tamu', ['notaris' => TamuController::notarisContoh(), 'pilihan' => Jabatan::utama()?->id]) : '')
+            ->renderHook(PanelsRenderHook::SIMPLE_LAYOUT_START, fn () => view('filament.masuk-merek'), scopes: Login::class)
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.masuk-tamu', [
+                'tamu' => $tamu = TamuController::tersedia(),
+                'notaris' => $tamu ? TamuController::notarisContoh() : collect(),
+            ]))
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString('<link rel="stylesheet" href="'.asset('css/notaria.css').'?v='.@filemtime(public_path('css/notaria.css')).'">'))
             ->middleware([
                 EncryptCookies::class,
