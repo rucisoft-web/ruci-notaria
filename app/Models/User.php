@@ -28,6 +28,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'is_tamu' => 'boolean',
             'role' => Role::class,
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
@@ -42,7 +43,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        return $this->is_active && (! $this->is_tamu || config('notaria.demo.enabled'));
+    }
+
+    /** Akun tamu situs demo; hanya ada bila NOTARIA_DEMO=true. */
+    public function isTamu(): bool
+    {
+        return (bool) $this->is_tamu;
     }
 
     public function getAppAuthenticationSecret(): ?string

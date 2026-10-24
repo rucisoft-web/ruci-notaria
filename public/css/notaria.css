@@ -82,3 +82,21 @@
 .nt-check .n { font-size: 1.3rem; font-weight: 700; text-align: center; color: var(--nt-good); }
 .nt-check .n.ada { color: var(--nt-bad); }
 .nt-check small { color: var(--nt-muted); }
+
+/* Label data contoh (situs demo). */
+.nt-contoh { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; background: #fff4d6; color: #6b4a00; border-bottom: 1px solid #f0d38a; padding: 6px 16px; font-size: .8rem; text-align: center; position: relative; z-index: 40; }
+.nt-contoh strong { background: #b8893a; color: #fff; border-radius: 4px; padding: 1px 8px; letter-spacing: .06em; font-size: .72rem; }
+.dark .nt-contoh { background: #3a2f12; color: #f3dfa6; border-color: #5c4a1c; }
+
+/* Masuk sebagai tamu di halaman login. */
+.nt-tamu { margin-top: 4px; }
+.nt-tamu-garis { display: flex; align-items: center; gap: 10px; color: #8a9896; font-size: .8rem; margin: 6px 0 14px; }
+.nt-tamu-garis::before, .nt-tamu-garis::after { content: ""; flex: 1; border-top: 1px solid #e2e8e7; }
+.nt-tamu-tombol { width: 100%; padding: 9px 14px; border-radius: 8px; border: 1px solid #174f49; background: #fff; color: #174f49; font-weight: 600; font-size: .875rem; cursor: pointer; }
+.nt-tamu-tombol:hover { background: #eef6f5; }
+.dark .nt-tamu-tombol { background: transparent; color: #a7d2cc; border-color: #45958c; }
+.nt-tamu-info { margin-top: 14px; font-size: .8rem; color: #4b5c5a; line-height: 1.5; background: #f5f9f8; border-radius: 8px; padding: 12px 14px; }
+.dark .nt-tamu-info { background: rgb(39 39 42); color: #c9d4d2; }
+.nt-tamu-info ul { list-style: disc; padding-left: 18px; margin: 6px 0; }
+.nt-tamu-info p { margin: 0; }
+.nt-tamu-kecil { margin-top: 8px !important; font-size: .72rem; color: #7a8a88; }

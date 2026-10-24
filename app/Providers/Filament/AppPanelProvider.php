@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dasbor;
+use App\Http\Controllers\TamuController;
+use App\Http\Middleware\BatasiTamu;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -45,7 +47,7 @@ class AppPanelProvider extends PanelProvider
             ->font('Inter')
             ->multiFactorAuthentication(
                 [AppAuthentication::make()->recoverable()],
-                isRequired: fn () => (bool) config('notaria.mfa_required'),
+                isRequired: fn () => (bool) config('notaria.mfa_required') && ! auth()->user()?->isTamu(),
             )
             ->navigationGroups([
                 NavigationGroup::make('Kerja Harian'),
@@ -60,6 +62,8 @@ class AppPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->maxContentWidth('full')
             ->globalSearch(false)
+            ->renderHook(PanelsRenderHook::BODY_START, fn () => config('notaria.demo.enabled') ? view('filament.label-data-contoh') : '')
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => TamuController::tersedia() ? view('filament.masuk-tamu') : '')
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString('<link rel="stylesheet" href="'.asset('css/notaria.css').'?v='.@filemtime(public_path('css/notaria.css')).'">'))
             ->middleware([
                 EncryptCookies::class,
@@ -72,6 +76,6 @@ class AppPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([Authenticate::class]);
+            ->authMiddleware([Authenticate::class, BatasiTamu::class]);
     }
 }

@@ -21,7 +21,16 @@ return [
     'demo' => [
         'enabled' => (bool) env('NOTARIA_DEMO', false),
         'password' => env('NOTARIA_DEMO_PASSWORD', 'Demo#2026notaria'),
+        // Tombol "Masuk sebagai tamu" di halaman login (hanya bila demo aktif).
+        'tamu' => (bool) env('NOTARIA_DEMO_TAMU', true),
+        // Data contoh dihapus dan dimuat ulang setiap hari pukul 02.00 agar ubahan tamu tidak menumpuk.
+        'reset_harian' => (bool) env('NOTARIA_DEMO_RESET_HARIAN', false),
     ],
+
+    // Halaman depan berisi penjelasan fitur (untuk situs promosi). false = "/" langsung ke halaman masuk.
+    'landing' => (bool) env('NOTARIA_LANDING', false),
+    // Tautan "Hubungi kami" di halaman depan, misalnya https://wa.me/62812xxxx atau mailto:halo@contoh.id. Kosong = tombol disembunyikan.
+    'kontak' => env('NOTARIA_KONTAK'),
 
     /*
     | Tenggat yang dipicu oleh akta yang ditandatangani. Jenis layanan memilih kode yang berlaku.

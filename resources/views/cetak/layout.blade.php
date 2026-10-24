@@ -30,6 +30,7 @@
         .catatan { font-size: 9.5pt; color: #444; margin-top: 18px; }
         .ganti-halaman { page-break-before: always; }
         .alat { position: sticky; top: 0; background: #174f49; color: #fff; padding: 8px 16px; font-family: system-ui, sans-serif; font-size: 14px; display: flex; gap: 12px; align-items: center; }
+        .contoh { position: fixed; top: 45%; left: 0; right: 0; text-align: center; transform: rotate(-24deg); font: bold 72pt Arial, sans-serif; color: rgba(184, 137, 58, .16); letter-spacing: .12em; pointer-events: none; z-index: 5; }
         .alat button { background: #fff; color: #174f49; border: 0; border-radius: 6px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
         @media print {
             body { background: #fff; }
@@ -41,6 +42,7 @@
 </head>
 <body>
     <div class="alat"><button type="button" onclick="window.print()">Cetak / simpan PDF</button><span>@yield('judul')</span></div>
+    @if (config('notaria.demo.enabled'))<div class="contoh">DATA CONTOH</div>@endif
     @yield('isi')
 </body>
 </html>

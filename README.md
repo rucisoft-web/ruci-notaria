@@ -56,7 +56,17 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-Buka `http://localhost:8000/app`. Akun data contoh: `notaris@notaria.demo`, `staf@notaria.demo`, `staf2@notaria.demo`, `keuangan@notaria.demo`, `arsip@notaria.demo`, `admin@notaria.demo` dengan sandi `NOTARIA_DEMO_PASSWORD` (bawaan `Demo#2026notaria`).
+Buka `http://localhost:8000/app`. Data contoh berisi **tiga notaris fiktif** (Kota Bandung, Kota Cimahi, Kabupaten Bandung Barat) dan diberi label DATA CONTOH di setiap layar dan cetakan. Akun: `notaris@`, `notaris2@`, `notaris3@`, `staf@`, `staf2@`, `keuangan@`, `arsip@`, `admin@notaria.demo` dengan sandi `NOTARIA_DEMO_PASSWORD` (bawaan `Demo#2026notaria`), atau tombol **Masuk sebagai tamu** di halaman login.
+
+### Situs demo dan halaman depan
+
+| Variabel | Fungsi |
+|---|---|
+| `NOTARIA_DEMO=true` | Muat data contoh, tampilkan pita dan tanda air DATA CONTOH |
+| `NOTARIA_DEMO_TAMU=true` | Tombol "Masuk sebagai tamu" (akun notaris contoh tanpa pengaturan, profil, dan AI) |
+| `NOTARIA_DEMO_RESET_HARIAN=true` | Kembalikan data contoh setiap hari pukul 02.00 |
+| `NOTARIA_LANDING=true` | Halaman depan `/` berisi penjelasan fitur, siap dibagikan di LinkedIn (Open Graph 1200×627) |
+| `NOTARIA_KONTAK` | Tautan tombol "Hubungi kami" di halaman depan |
 
 Uji otomatis: `php artisan test`. Uji mencakup terbilang, penomoran akta, kunci akta, kesiapan dan hubungan keluarga, tenggat hari kerja, penjilidan, nomor legalisasi, buku daftar dan celah nomor, rantai audit, honorarium, pembayaran, pembuatan draf .docx, pemeriksa draf, penyamaran data AI, serta semua layar dan cetakan untuk setiap peran.
 
@@ -69,7 +79,8 @@ Lihat [PANDUAN-CPANEL.md](PANDUAN-CPANEL.md).
 | Perintah | Fungsi |
 |---|---|
 | `notaria:create-admin email "Nama" --role=notaris --password=...` | Buat atau perbarui pengguna |
-| `notaria:demo` | Muat data contoh kantor notaris fiktif |
+| `notaria:demo` | Muat data contoh tiga kantor notaris fiktif |
+| `notaria:demo-reset` | Kosongkan database dan berkas lalu muat ulang data contoh (hanya bila `NOTARIA_DEMO=true`) |
 | `notaria:doctor` | Periksa kesiapan server |
 | `notaria:tenggat-bulanan [--periode=YYYY-MM]` | Buat tenggat MPD, wasiat, dan penjilidan (otomatis tiap tanggal 1) |
 | `notaria:periksa-audit` | Verifikasi rantai hash jejak audit (otomatis tiap Senin) |
