@@ -38,7 +38,28 @@ Artisan::command('notaria:create-admin {email} {name} {--role=notaris} {--passwo
 
 Artisan::command('notaria:demo', function () {
     $this->call('db:seed', ['--class' => 'Database\\Seeders\\DemoSeeder', '--force' => true]);
-})->purpose('Muat data contoh kantor notaris');
+})->purpose('Muat data contoh tiga kantor notaris fiktif');
+
+Artisan::command('notaria:demo-reset', function () {
+    if (! config('notaria.demo.enabled')) {
+        $this->error('Hanya untuk situs demo (NOTARIA_DEMO=true). Perintah ini menghapus seluruh isi database.');
+
+        return 1;
+    }
+    $disk = Storage::disk('local');
+    foreach ($disk->directories() as $dir) {
+        $disk->deleteDirectory($dir);
+    }
+    foreach ($disk->files() as $file) {
+        if ($file !== '.gitignore') {
+            $disk->delete($file);
+        }
+    }
+    $this->call('migrate:fresh', ['--force' => true, '--seed' => true]);
+    $this->info('Situs demo dikembalikan ke data contoh awal.');
+
+    return 0;
+})->purpose('Kosongkan database dan berkas lalu muat ulang data contoh (khusus situs demo)');
 
 Artisan::command('notaria:tenggat-bulanan {--periode= : YYYY-MM, bawaan bulan lalu}', function (KalkulatorTenggat $kalkulator) {
     $periode = $this->option('periode') ? now()->createFromFormat('Y-m-d', $this->option('periode').'-01') : now()->subMonthNoOverflow();
@@ -91,4 +112,7 @@ Artisan::command('notaria:doctor', function () {
 // Tanggal 1 setiap bulan: tenggat laporan MPD, daftar wasiat, dan penjilidan untuk bulan sebelumnya.
 Schedule::command('notaria:tenggat-bulanan')->monthlyOn(1, '00:30');
 Schedule::command('notaria:periksa-audit')->weeklyOn(1, '01:00');
+if (config('notaria.demo.enabled') && config('notaria.demo.reset_harian')) {
+    Schedule::command('notaria:demo-reset')->dailyAt('02:00');
+}
 Schedule::command('queue:work --stop-when-empty --max-time=50')->everyMinute()->withoutOverlapping();

@@ -163,19 +163,46 @@ Akhir bulan: **Buku Daftar** › pilih bulan › *Paket laporan bulanan MPD* ›
 3. Centang *Persetujuan AI* pada data klien yang setuju datanya diproses. Berkas *sangat rahasia* tidak pernah dikirim ke AI.
 4. Semua panggilan tercatat di **Pengaturan › Log AI**.
 
-## 9. Situs demo
+## 9. Situs demo dan halaman promosi
 
-Isi `NOTARIA_DEMO=true`, jalankan `php artisan notaria:demo` dan `php artisan optimize`. Data fiktif kantor Notaris Dr. Rina Kartika di Bandung: 5 akta (4 bernomor), legalisasi dan waarmerking, tagihan dengan pembayaran sebagian, tenggat, dan berkas sangat rahasia.
+Situs demo dipasang **terpisah** dari kantor sungguhan, misalnya di subdomain `notaria.rucisoft.id` dengan database sendiri. Jangan pernah menyalakan pengaturan di bawah ini pada instalasi yang berisi data klien.
+
+Tambahkan ke `.env` situs demo. `APP_URL` wajib persis sama dengan alamat situs, karena gambar pratinjau LinkedIn memakai alamat lengkap:
+
+```
+APP_URL=https://notaria.rucisoft.id
+NOTARIA_DEMO=true
+NOTARIA_DEMO_TAMU=true
+NOTARIA_DEMO_RESET_HARIAN=true
+NOTARIA_LANDING=true
+NOTARIA_KONTAK=https://wa.me/62812xxxxxxx
+```
+
+Lalu jalankan `php artisan migrate --force`, `php artisan notaria:demo`, dan `php artisan optimize`.
+
+- **Halaman depan** (`https://notaria.rucisoft.id/`) menjelaskan fitur untuk notaris dan siap dibagikan di LinkedIn: judul, ringkasan, dan gambar pratinjau 1200×627 sudah terpasang. Setelah situs online, tempel alamatnya di [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) agar pratinjau dimuat ulang.
+- **Masuk sebagai tamu**: tombol di halaman depan dan halaman login. Tamu masuk sebagai notaris contoh tanpa sandi, tetapi tidak dapat membuka pengaturan, pengguna, profil, maupun fitur AI.
+- **Label DATA CONTOH**: pita kuning di setiap layar dan tanda air di setiap cetakan.
+- **Reset harian**: cron `schedule:run` (langkah 7) menjalankan `notaria:demo-reset` setiap pukul 02.00, yaitu mengosongkan database dan berkas lalu memuat ulang data contoh. Perintah ini menolak berjalan bila `NOTARIA_DEMO` bukan `true`.
+
+Data contoh berisi tiga notaris fiktif di Jawa Barat. Tanggal dihitung mundur dari hari reset sehingga dasbor selalu terlihat baru.
+
+| Notaris | Kode | Isi |
+|---|---|---|
+| Dr. Rina Kartika, S.H., M.Kn. (Notaris & PPAT, Kota Bandung) | RK | sewa ruko, kuasa, fidusia bank, PPJB dengan tagihan dibayar sebagian, pendirian PT dijadwalkan besok, wasiat sangat rahasia |
+| Bambang Hartono, S.H., M.Kn. (Notaris, Kota Cimahi) | BH | pendirian CV dan yayasan, perjanjian kawin, akta wasiat, pengakuan utang dijadwalkan hari ini, tagihan lunas |
+| Ayu Pratiwi Handayani, S.H., M.Kn. (Notaris & PPAT, Kab. Bandung Barat) | AP | PPJB tanah, keterangan waris, kuasa, perjanjian kerja sama yang tertahan karena saksi bersaudara dengan penghadap (temuan R-04) |
 
 | Peran | Email |
 |---|---|
-| Notaris | notaris@notaria.demo |
+| Notaris | notaris@notaria.demo (Rina), notaris2@notaria.demo (Bambang), notaris3@notaria.demo (Ayu) |
 | Staf | staf@notaria.demo, staf2@notaria.demo |
 | Keuangan | keuangan@notaria.demo |
 | Arsiparis | arsip@notaria.demo |
 | Admin TI | admin@notaria.demo |
+| Tamu | tombol "Masuk sebagai tamu" (tanpa sandi) |
 
-Sandi semua akun: `NOTARIA_DEMO_PASSWORD` (bawaan `Demo#2026notaria`). Jangan memuat data contoh di instalasi sungguhan.
+Sandi semua akun kecuali tamu: `NOTARIA_DEMO_PASSWORD` (bawaan `Demo#2026notaria`). Ganti sandi ini di situs demo publik agar pengunjung hanya memakai akun tamu.
 
 ## 10. Memperbarui program
 

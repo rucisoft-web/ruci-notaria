@@ -17,6 +17,7 @@ class AiGerbang
     public function alasanTolak(string $fitur, ?Berkas $berkas = null, ?Subjek $subjek = null): ?string
     {
         return match (true) {
+            (bool) auth()->user()?->isTamu() => 'Fitur AI tidak tersedia untuk akun tamu.',
             ! Pengaturan::get('ai.aktif') => 'Fitur AI belum diaktifkan notaris (Pengaturan › AI).',
             ! Pengaturan::get("ai.{$fitur}") => 'Fitur AI ini belum diaktifkan notaris.',
             blank(config('notaria.ai.api_key')) => 'OPENAI_API_KEY belum diisi di file .env.',
