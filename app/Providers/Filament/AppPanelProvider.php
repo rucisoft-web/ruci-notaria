@@ -35,6 +35,9 @@ class AppPanelProvider extends PanelProvider
             ->passwordReset()
             ->profile()
             ->brandName(fn () => 'Ruci Notaria')
+            ->brandLogo(fn () => asset('img/logo/ruci-notaria.svg'))
+            ->darkModeBrandLogo(fn () => asset('img/logo/ruci-notaria-putih.svg'))
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('favicon.svg'))
             ->colors([
                 // Hijau tua kebiruan dengan aksen emas: kesan resmi dan tenang untuk kantor notaris.
@@ -53,6 +56,7 @@ class AppPanelProvider extends PanelProvider
                 NavigationGroup::make('Kerja Harian'),
                 NavigationGroup::make('Buku Daftar & Protokol'),
                 NavigationGroup::make('Keuangan'),
+                NavigationGroup::make('Panduan'),
                 NavigationGroup::make('Pengaturan')->collapsed(),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -63,7 +67,7 @@ class AppPanelProvider extends PanelProvider
             ->maxContentWidth('full')
             ->globalSearch(false)
             ->renderHook(PanelsRenderHook::BODY_START, fn () => config('notaria.demo.enabled') ? view('filament.label-data-contoh') : '')
-            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => TamuController::tersedia() ? view('filament.masuk-tamu') : '')
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn () => view('filament.masuk-tamu', ['tamu' => TamuController::tersedia()]))
             ->renderHook(PanelsRenderHook::HEAD_END, fn () => new HtmlString('<link rel="stylesheet" href="'.asset('css/notaria.css').'?v='.@filemtime(public_path('css/notaria.css')).'">'))
             ->middleware([
                 EncryptCookies::class,

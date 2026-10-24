@@ -23,7 +23,7 @@ class DanaTitipanRelationManager extends RelationManager
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return (bool) auth()->user()?->role?->canFinance();
+        return (bool) auth()->user()?->role?->canViewFinance();
     }
 
     public function form(Schema $schema): Schema

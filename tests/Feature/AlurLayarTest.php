@@ -54,7 +54,7 @@ class AlurLayarTest extends TestCase
             ->assertHasNoActionErrors();
 
         $akta->refresh();
-        $this->assertSame([3, 5], [$akta->nomor_bulanan, $akta->nomor_urut]);
+        $this->assertSame([4, 7], [$akta->nomor_bulanan, $akta->nomor_urut]);
         $this->assertSame(2, $akta->draf()->count());
     }
 

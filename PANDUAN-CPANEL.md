@@ -181,7 +181,8 @@ NOTARIA_KONTAK=https://wa.me/62812xxxxxxx
 Lalu jalankan `php artisan migrate --force`, `php artisan notaria:demo`, dan `php artisan optimize`.
 
 - **Halaman depan** (`https://notaria.rucisoft.id/`) menjelaskan fitur untuk notaris dan siap dibagikan di LinkedIn: judul, ringkasan, dan gambar pratinjau 1200×627 sudah terpasang. Setelah situs online, tempel alamatnya di [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) agar pratinjau dimuat ulang.
-- **Masuk sebagai tamu**: tombol di halaman depan dan halaman login. Tamu masuk sebagai notaris contoh tanpa sandi, tetapi tidak dapat membuka pengaturan, pengguna, profil, maupun fitur AI.
+- **Masuk sebagai tamu**: tombol di halaman depan dan halaman login. Tamu masuk tanpa sandi dengan peran **Tamu (hanya lihat)**: semua berkas, akta, buku daftar, keuangan, dan protokol dapat dilihat, tetapi tombol tambah, ubah, hapus, dan beri nomor disembunyikan, setiap penyimpanan ditolak, dan profil serta fitur AI tidak tersedia.
+- **Mengapa Ruci Notaria** (`/mengapa-ruci-notaria`) dan **Panduan penggunaan** (`/panduan`): terbuka tanpa login, ditautkan dari halaman login dan halaman depan, cocok untuk dibagikan di LinkedIn.
 - **Label DATA CONTOH**: pita kuning di setiap layar dan tanda air di setiap cetakan.
 - **Reset harian**: cron `schedule:run` (langkah 7) menjalankan `notaria:demo-reset` setiap pukul 02.00, yaitu mengosongkan database dan berkas lalu memuat ulang data contoh. Perintah ini menolak berjalan bila `NOTARIA_DEMO` bukan `true`.
 

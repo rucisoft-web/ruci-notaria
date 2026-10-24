@@ -100,3 +100,6 @@
 .nt-tamu-info ul { list-style: disc; padding-left: 18px; margin: 6px 0; }
 .nt-tamu-info p { margin: 0; }
 .nt-tamu-kecil { margin-top: 8px !important; font-size: .72rem; color: #7a8a88; }
+.nt-tautan-panduan { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 14px; font-size: .82rem; }
+.nt-tautan-panduan a { color: #0b3a5c; text-decoration: underline; text-underline-offset: 2px; }
+.dark .nt-tautan-panduan a { color: #9cc7e8; }

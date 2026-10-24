@@ -35,7 +35,7 @@ class AiPermintaanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return static::canAdminister();
+        return (bool) static::role()?->canViewSettings();
     }
 
     public static function canCreate(): bool

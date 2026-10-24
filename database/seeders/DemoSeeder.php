@@ -8,19 +8,31 @@ use App\Enums\StatusAkta;
 use App\Enums\StatusBerkas;
 use App\Enums\StatusTagihan;
 use App\Enums\StatusTemplate;
+use App\Models\AiPermintaan;
 use App\Models\Akta;
+use App\Models\BeritaAcaraPembetulan;
 use App\Models\Berkas;
+use App\Models\BerkasPihak;
+use App\Models\BukuFisik;
+use App\Models\Dokumen;
 use App\Models\HariLibur;
 use App\Models\Jabatan;
 use App\Models\JenisLayanan;
 use App\Models\LokasiArsip;
+use App\Models\PeminjamanMinuta;
 use App\Models\Pengaturan;
+use App\Models\PermintaanPenegakHukum;
+use App\Models\Salinan;
+use App\Models\SerahTerimaProtokol;
 use App\Models\Subjek;
 use App\Models\Tagihan;
+use App\Models\TandaTerima;
 use App\Models\TemplateAkta;
 use App\Models\Tenggat;
+use App\Models\Tugas;
 use App\Models\User;
 use App\Services\KalkulatorTenggat;
+use App\Services\PenjilidanMinuta;
 use App\Services\PenomoranAkta;
 use App\Services\PenomoranSurat;
 use App\Services\PenyusunDraf;
@@ -29,6 +41,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * DATA CONTOH: tiga kantor notaris fiktif di Jawa Barat (Kota Bandung, Kota Cimahi, Kabupaten Bandung Barat).
@@ -46,6 +59,17 @@ class DemoSeeder extends Seeder
 
     /** @var Collection<string, int> */
     private $layanan;
+
+    /** @var array<string, int> kode jabatan => id lokasi arsip */
+    private array $lokasi = [];
+
+    /** Peran para pihak di berkas menurut jenis layanan, berurutan seperti penghadap akta. */
+    private const PERAN = [
+        'PERJANJIAN' => ['Pihak pertama', 'Pihak kedua', 'Pihak ketiga'], 'KUASA' => ['Pemberi kuasa'], 'FIDUSIA' => ['Penerima fidusia', 'Pemberi fidusia'],
+        'PT-DIRI' => ['Pendiri', 'Pendiri'], 'PT-UBAH' => ['Direktur', 'Komisaris'], 'CV-DIRI' => ['Sekutu aktif', 'Sekutu komanditer'], 'YYS-DIRI' => ['Pendiri', 'Pendiri'],
+        'PKM-DIRI' => ['Pendiri', 'Pendiri', 'Pendiri'], 'PERJ-KAWIN' => ['Calon suami', 'Calon istri'], 'WASIAT' => ['Pewasiat'], 'UTANG' => ['Debitur', 'Kreditur'],
+        'WARIS' => ['Ahli waris', 'Ahli waris'], 'PROTES' => ['Pemegang cek'], 'SKMHT' => ['Pemberi kuasa', 'Penerima kuasa'],
+    ];
 
     public function run(): void
     {
@@ -75,8 +99,8 @@ class DemoSeeder extends Seeder
             ] as [$kunci, $nama, $role]) {
                 $this->u[$kunci] = User::updateOrCreate(['email' => "{$kunci}@notaria.demo"], ['name' => $nama, 'password' => $sandi, 'role' => $role, 'is_active' => true]);
             }
-            // Akun tamu: peran notaris agar semua layar dapat dilihat, tetapi tanpa pengaturan, profil, dan AI.
-            User::updateOrCreate(['email' => 'tamu@notaria.demo'], ['name' => 'Tamu (Data Contoh)', 'password' => str()->password(32), 'role' => Role::Notaris, 'is_active' => true])
+            // Akun tamu: peran Tamu melihat semua layar tanpa dapat mengubah data apa pun.
+            User::updateOrCreate(['email' => 'tamu@notaria.demo'], ['name' => 'Tamu (Data Contoh)', 'password' => str()->password(32), 'role' => Role::Tamu, 'is_active' => true])
                 ->forceFill(['is_tamu' => true])->save();
             Auth::setUser($this->u['notaris']); // tanpa sesi: hanya untuk created_by dan jejak audit
 
@@ -84,23 +108,30 @@ class DemoSeeder extends Seeder
             foreach ([["{$tahun}-12-24", 'Cuti bersama Natal'], ["{$tahun}-12-25", 'Hari Raya Natal'], [($tahun + 1).'-01-01', 'Tahun Baru Masehi']] as [$t, $n]) {
                 HariLibur::firstOrCreate(['tanggal' => $t], ['nama' => $n]);
             }
-            foreach ([['L-A1', 'Lemari tahan api A, rak 1 (Bandung)'], ['L-B1', 'Lemari tahan api B, rak 1 (Cimahi)'], ['L-C1', 'Lemari tahan api C, rak 1 (Ngamprah)']] as [$kode, $nama]) {
-                LokasiArsip::create(['kode' => $kode, 'nama' => $nama]);
+            foreach ([['RK', 'L-A1', 'Lemari tahan api A, rak 1 (Bandung)'], ['BH', 'L-B1', 'Lemari tahan api B, rak 1 (Cimahi)'], ['AP', 'L-C1', 'Lemari tahan api C, rak 1 (Ngamprah)']] as [$jab, $kode, $nama]) {
+                $this->lokasi[$jab] = LokasiArsip::create(['kode' => $kode, 'nama' => $nama])->id;
             }
+            LokasiArsip::create(['kode' => 'G-01', 'nama' => 'Gudang arsip protokol lama (Bandung)']);
 
             $this->layanan = JenisLayanan::query()->pluck('id', 'kode');
             $tplPath = app(TemplateBawaan::class)->aktaUmum('template/akta-umum-v1.docx');
             $this->template = TemplateAkta::create(['nama' => 'Akta Umum (contoh)', 'versi' => 1, 'path' => $tplPath, 'status' => StatusTemplate::Disetujui,
                 'disetujui_oleh' => $this->u['notaris']->id, 'disetujui_at' => now(), 'catatan' => 'Template contoh bawaan aplikasi.']);
+            TemplateAkta::create(['nama' => 'Akta Umum (contoh)', 'versi' => 2, 'path' => app(TemplateBawaan::class)->aktaUmum('template/akta-umum-v2.docx'),
+                'status' => StatusTemplate::Draf, 'catatan' => 'Versi 2 menunggu persetujuan notaris: redaksi komparisi badan hukum diperbarui.']);
 
             $this->kantorBandung();
             $this->kantorCimahi();
             $this->kantorBandungBarat();
 
             app(KalkulatorTenggat::class)->buatBulanan(today()->subMonthNoOverflow()->startOfMonth());
-            // Kantor contoh yang tertib: tenggat lama sudah diselesaikan, hanya beberapa yang baru lewat tetap terlihat terlambat.
-            Tenggat::query()->whereNull('selesai_at')->whereDate('jatuh_tempo', '<', today()->subDays(3))
-                ->update(['selesai_at' => now(), 'selesai_oleh' => $this->u['staf']->id]);
+            // Kantor contoh yang tertib: tenggat lama sudah diselesaikan, hanya yang baru lewat tetap terlihat terlambat.
+            Tenggat::query()->whereNull('selesai_at')->whereDate('jatuh_tempo', '<', today()->subDays(7))
+                ->update(['selesai_at' => now(), 'selesai_oleh' => $this->u['staf']->id, 'catatan' => 'Selesai (data contoh).']);
+
+            $this->lengkapiBerkas();
+            $this->lengkapiProtokol();
+            $this->logAi();
             Auth::forgetUser();
         });
 
@@ -129,13 +160,36 @@ class DemoSeeder extends Seeder
         $budi->relasi()->create(['terkait_id' => $ani->id, 'hubungan' => 'suami_istri']);
 
         $b = $this->berkas($j, 'PERJANJIAN', 'Sewa ruko Jalan Merdeka', $budi, StatusBerkas::Selesai, 52, 'staf', ['nilai_transaksi' => 240_000_000]);
-        $this->nomori($j, $this->akta($j, $b, 'Perjanjian Sewa Menyewa', $saksi, [[$budi], [$hendra]], 240_000_000), 45, '10:00');
+        $sewa = $this->nomori($j, $this->akta($j, $b, 'Perjanjian Sewa Menyewa', $saksi, [[$budi], [$hendra]], 240_000_000), 45, '10:00');
         $b = $this->berkas($j, 'KUASA', 'Kuasa menjual tanah Cimahi', $maya, StatusBerkas::Selesai, 36, 'staf');
-        $this->nomori($j, $this->akta($j, $b, 'Kuasa', $saksi, [[$maya]]), 33, '13:30');
-        $b = $this->berkas($j, 'FIDUSIA', 'Fidusia kendaraan CV Maju', $bank, StatusBerkas::PascaAkta, 24, 'staf', ['nilai_transaksi' => 350_000_000]);
-        $this->nomori($j, $this->akta($j, $b, 'Jaminan Fidusia', $saksi, [[$hendra, Kedudukan::MewakiliBadan, $bank, 'selaku kuasa Direksi berdasarkan Surat Kuasa Nomor 12/SK/2026'], [$budi]], 350_000_000), 20, '09:00');
+        $kuasa = $this->nomori($j, $this->akta($j, $b, 'Kuasa', $saksi, [[$maya]]), 33, '13:30');
+        $b = $this->berkas($j, 'PROTES', 'Protes non-pembayaran cek Hendra', $hendra, StatusBerkas::Selesai, 28, 'staf');
+        $this->nomori($j, $this->akta($j, $b, 'Protes Non-Pembayaran Cek', $saksi, [[$hendra]], 85_000_000), 27, '15:30');
+        $fid = $this->berkas($j, 'FIDUSIA', 'Fidusia kendaraan CV Maju', $bank, StatusBerkas::PascaAkta, 24, 'staf', ['nilai_transaksi' => 350_000_000]);
+        $fidusia = $this->nomori($j, $this->akta($j, $fid, 'Jaminan Fidusia', $saksi, [[$hendra, Kedudukan::MewakiliBadan, $bank, 'selaku kuasa Direksi berdasarkan Surat Kuasa Nomor 12/SK/2026'], [$budi]], 350_000_000), 20, '09:00');
         $ppjb = $this->berkas($j, 'PERJANJIAN', 'PPJB rumah Dago', $hendra, StatusBerkas::Ditandatangani, 15, 'staf', ['nilai_transaksi' => 1_200_000_000]);
-        $this->nomori($j, $this->akta($j, $ppjb, 'Perjanjian Pengikatan Jual Beli', $saksi, [[$hendra], [$maya]], 1_200_000_000), 9, '11:00');
+        $aktaPpjb = $this->nomori($j, $this->akta($j, $ppjb, 'Perjanjian Pengikatan Jual Beli', $saksi, [[$hendra], [$maya]], 1_200_000_000), 9, '11:00',
+            ['renvoi_tambah' => 1, 'renvoi_coret' => 2, 'catatan_penandatanganan' => 'Penghadap Maya Puspita membubuhkan cap jempol kanan selain tanda tangan.']);
+        $b = $this->berkas($j, 'SKMHT', 'SKMHT rumah Jalan Merdeka untuk Bank Contoh', $budi, StatusBerkas::PascaAkta, 4, 'staf', ['nilai_transaksi' => 500_000_000]);
+        $this->nomori($j, $this->akta($j, $b, 'Surat Kuasa Membebankan Hak Tanggungan', $saksi, [[$budi], [$ani]], 500_000_000), 2, '10:00');
+
+        // Setelah tanda tangan: salinan, kutipan, grosse, satu permintaan salinan yang ditolak, pembetulan, peminjaman minuta.
+        Salinan::create(['akta_id' => $aktaPpjb->id, 'jenis' => 'salinan', 'tanggal' => $this->hari(8), 'penerima' => 'Hendra Wijaya', 'dasar_hak' => 'pihak', 'bermeterai' => true]);
+        Salinan::create(['akta_id' => $aktaPpjb->id, 'jenis' => 'salinan', 'tanggal' => $this->hari(8), 'penerima' => 'Maya Puspita', 'dasar_hak' => 'pihak', 'bermeterai' => true]);
+        Salinan::create(['akta_id' => $aktaPpjb->id, 'jenis' => 'salinan', 'tanggal' => $this->hari(3), 'penerima' => 'Sdr. Joni (tetangga, bukan pihak)', 'dasar_hak' => 'tidak_berhak',
+            'alasan_tolak' => 'Bukan pihak, ahli waris, atau penerima hak (Pasal 54 UUJN).']);
+        Salinan::create(['akta_id' => $fidusia->id, 'jenis' => 'grosse', 'tanggal' => $this->hari(19), 'penerima' => 'PT Bank Contoh Sejahtera Tbk', 'dasar_hak' => 'penerima_hak', 'bermeterai' => true,
+            'keterangan' => 'Grosse pertama untuk kreditur penerima fidusia.']);
+        Salinan::create(['akta_id' => $kuasa->id, 'jenis' => 'kutipan', 'tanggal' => $this->hari(30), 'penerima' => 'Maya Puspita', 'dasar_hak' => 'pihak']);
+        BeritaAcaraPembetulan::create(['akta_id' => $sewa->id, 'tanggal' => $this->hari(40), 'kesalahan' => 'Tertulis RT/RW pihak pertama 004/012.',
+            'pembetulan' => 'Seharusnya RT/RW 004/002 sesuai KTP.', 'disampaikan_kepada' => "Budi Santoso\nHendra Wijaya"]);
+        PeminjamanMinuta::create(['akta_id' => $kuasa->id, 'peminjam_id' => $this->u['staf']->id, 'alasan' => 'Pemindaian minuta untuk cadangan digital',
+            'dipinjam_at' => today()->subDays(31)->setTime(9, 0), 'jatuh_tempo' => $this->hari(30), 'dikembalikan_at' => today()->subDays(30)->setTime(16, 0)]);
+        PeminjamanMinuta::create(['akta_id' => $sewa->id, 'peminjam_id' => $this->u['staf2']->id, 'alasan' => 'Pembuatan salinan tambahan',
+            'dipinjam_at' => today()->subDays(4)->setTime(10, 0), 'jatuh_tempo' => $this->hari(2)]);
+        PermintaanPenegakHukum::create(['akta_id' => $kuasa->id, 'jenis' => 'fotokopi_minuta', 'instansi' => 'Polrestabes Bandung (contoh)', 'nomor_surat' => 'B/123/X/2026/Reskrim',
+            'tanggal_surat' => $this->hari(16), 'nomor_persetujuan_mkn' => 'UM.MKNW.JB.11.26-45', 'tanggal_persetujuan_mkn' => $this->hari(6),
+            'tanggal_pelaksanaan' => $this->hari(3), 'catatan' => 'Fotokopi minuta diserahkan dengan berita acara penyerahan; minuta tetap di kantor.']);
 
         // Berkas aktif: pendirian PT dijadwalkan besok, wasiat yang masih mengumpulkan dokumen (sangat rahasia).
         $pt = $this->berkas($j, 'PT-DIRI', 'Pendirian PT Sinar Kopi Priangan', $budi, StatusBerkas::Dijadwalkan, 6, 'staf');
@@ -147,6 +201,8 @@ class DemoSeeder extends Seeder
         $surat = app(PenomoranSurat::class);
         $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'legalisasi', 'tanggal' => $this->hari(18), 'judul' => 'Surat Pernyataan Ahli Waris', 'para_pihak' => "Budi Santoso\nAni Lestari", 'jumlah_lembar' => 2]);
         $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'waarmerking', 'tanggal' => $this->hari(12), 'tanggal_surat' => $this->hari(23), 'judul' => 'Perjanjian Kerja Sama Distribusi', 'para_pihak' => "Hendra Wijaya\nMaya Puspita", 'jumlah_lembar' => 5]);
+        $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'legalisasi', 'tanggal' => $this->hari(5), 'judul' => 'Surat Kuasa Pengambilan BPKB', 'para_pihak' => 'Budi Santoso', 'jumlah_lembar' => 1]);
+        $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'fotokopi', 'tanggal' => $this->hari(1), 'judul' => 'Akta kelahiran dan kartu keluarga', 'para_pihak' => 'Maya Puspita', 'jumlah_lembar' => 3]);
 
         // Keuangan: tagihan PPJB terbit dan dibayar sebagian.
         $t = $this->tagihan($ppjb, 9, [
@@ -155,6 +211,28 @@ class DemoSeeder extends Seeder
         ]);
         $t->pembayaran()->create(['tanggal' => $this->hari(8), 'jumlah' => 5_000_000, 'metode' => 'transfer']);
         $ppjb->danaTitipan()->create(['tanggal' => $this->hari(8), 'arah' => 'masuk', 'jumlah' => 150_000, 'uraian' => 'Titipan biaya pengecekan sertipikat']);
+        $ppjb->danaTitipan()->create(['tanggal' => $this->hari(7), 'arah' => 'keluar', 'jumlah' => 150_000, 'uraian' => 'Dibayarkan ke Kantor Pertanahan Kota Bandung (PNBP pengecekan)']);
+        TandaTerima::create(['berkas_id' => $ppjb->id, 'arah' => 'masuk', 'tanggal' => $this->hari(14), 'pihak' => 'Hendra Wijaya',
+            'daftar_dokumen' => "Sertipikat Hak Milik No. 1234/Dago (asli)\nSPPT PBB 5 tahun terakhir (asli)\nIMB/PBG (fotokopi)"]);
+        TandaTerima::create(['berkas_id' => $ppjb->id, 'arah' => 'keluar', 'tanggal' => $this->hari(8), 'pihak' => 'Maya Puspita', 'daftar_dokumen' => 'Salinan Akta Perjanjian Pengikatan Jual Beli (1 rangkap)']);
+
+        // Fidusia untuk bank: tagihan lunas lewat QRIS, titipan PNBP pendaftaran fidusia.
+        $t = $this->tagihan($fid, 20, [
+            ['jenis' => 'honorarium', 'uraian' => 'Honorarium akta jaminan fidusia', 'jumlah' => 3_000_000],
+            ['jenis' => 'titipan', 'uraian' => 'PNBP pendaftaran jaminan fidusia', 'jumlah' => 400_000],
+        ]);
+        $t->pembayaran()->create(['tanggal' => $this->hari(18), 'jumlah' => 3_400_000, 'metode' => 'qris']);
+        $fid->danaTitipan()->create(['tanggal' => $this->hari(18), 'arah' => 'masuk', 'jumlah' => 400_000, 'uraian' => 'Titipan PNBP fidusia']);
+        $fid->danaTitipan()->create(['tanggal' => $this->hari(17), 'arah' => 'keluar', 'jumlah' => 400_000, 'uraian' => 'Pembayaran PNBP fidusia online (bukti setor terlampir)']);
+
+        // Dokumen identitas berkas PT: KTP para pendiri dan bukti pemesanan nama.
+        $this->dokumen($budi, 'ktp', 'KTP Budi Santoso');
+        $this->dokumen($ani, 'ktp', 'KTP Ani Lestari');
+        $this->dokumen($pt, 'lainnya', 'Bukti pemesanan nama PT Sinar Kopi Priangan', today()->addDays(54)->toDateString());
+        foreach ([['Pesan nama PT di AHU', 'staf', -5, true], ['Lengkapi data modal dan susunan saham', 'staf', -2, true], ['Kirim draf akta ke klien untuk dibaca', 'staf2', 0, false], ['Siapkan lembar tanda tangan dan sidik jari', 'staf', 1, false]] as [$judul, $pic, $hari, $selesai]) {
+            Tugas::create(['berkas_id' => $pt->id, 'judul' => $judul, 'user_id' => $this->u[$pic]->id, 'jatuh_tempo' => today()->addDays($hari)->toDateString(),
+                'selesai_at' => $selesai ? today()->addDays($hari)->setTime(15, 0) : null]);
+        }
     }
 
     /** Notaris di Kota Cimahi: badan usaha, yayasan, perjanjian kawin, wasiat. */
@@ -180,8 +258,13 @@ class DemoSeeder extends Seeder
         $b = $this->berkas($j, 'CV-DIRI', 'Pendirian CV Berkah Tani Mandiri', $rudi, StatusBerkas::Selesai, 47, 'staf2');
         $this->nomori($j, $this->akta($j, $b, 'Pendirian Persekutuan Komanditer CV Berkah Tani Mandiri', $saksi, [[$rudi], [$wawan]], 50_000_000), 40, '10:30');
         $cv = $b;
-        $b = $this->berkas($j, 'YYS-DIRI', 'Pendirian Yayasan Pendidikan Cahaya Cimahi', $siti, StatusBerkas::PascaAkta, 31, 'staf2');
-        $this->nomori($j, $this->akta($j, $b, 'Pendirian Yayasan Pendidikan Cahaya Cimahi', $saksi, [[$siti], [$rudi]]), 26, '09:30');
+        $koperasi = $this->badan(['nama' => 'PT Berkah Tani Nusantara', 'bentuk_badan' => 'pt', 'nomor_sk_badan' => 'AHU-0099.AH.01.01.Tahun 2021', 'nib' => '9120000000099', 'alamat' => 'Jalan Raya Cibabat Nomor 120', 'kota' => 'Kota Cimahi']);
+        $b = $this->berkas($j, 'PT-UBAH', 'RUPS PT Berkah Tani Nusantara: tambah modal', $koperasi, StatusBerkas::Selesai, 35, 'staf2', ['nilai_transaksi' => 2_000_000_000]);
+        $this->nomori($j, $this->akta($j, $b, 'Pernyataan Keputusan Rapat Umum Pemegang Saham PT Berkah Tani Nusantara', $saksi,
+            [[$rudi, Kedudukan::MewakiliBadan, $koperasi, 'selaku Direktur Utama berdasarkan notulen RUPS'], [$wawan, Kedudukan::MewakiliBadan, $koperasi, 'selaku Komisaris']]), 33, '11:00');
+        $yys = $this->berkas($j, 'YYS-DIRI', 'Pendirian Yayasan Pendidikan Cahaya Cimahi', $siti, StatusBerkas::PascaAkta, 31, 'staf2');
+        $yayasan = $this->nomori($j, $this->akta($j, $yys, 'Pendirian Yayasan Pendidikan Cahaya Cimahi', $saksi, [[$siti], [$rudi]]), 26, '09:30');
+        Salinan::create(['akta_id' => $yayasan->id, 'jenis' => 'kutipan', 'tanggal' => $this->hari(25), 'penerima' => 'Hj. Siti Aminah (untuk pengajuan pengesahan)', 'dasar_hak' => 'pihak']);
         $b = $this->berkas($j, 'PERJ-KAWIN', 'Perjanjian kawin Andi dan Dewi', $andi, StatusBerkas::Selesai, 18, 'staf2');
         $this->nomori($j, $this->akta($j, $b, 'Perjanjian Perkawinan', $saksi, [[$andi], [$dewi]]), 14, '15:00');
         $b = $this->berkas($j, 'WASIAT', 'Wasiat Hj. Siti Aminah', $siti, StatusBerkas::Selesai, 8, 'staf2', ['sangat_rahasia' => true]);
@@ -193,6 +276,16 @@ class DemoSeeder extends Seeder
         $a->update(['status' => StatusAkta::Dijadwalkan, 'jadwal_at' => today()->setTime(14, 0)]);
         app(PenyusunDraf::class)->buat($a, $this->template);
 
+        // Dijadwalkan lusa: penghadap WNA dengan paspor yang sudah habis berlaku, sehingga kesiapan menandai R-14.
+        $kenji = $o(['nama' => 'Kenji Tanaka', 'nik' => 'TZ1234567', 'jenis_identitas' => 'paspor', 'kewarganegaraan' => 'Jepang', 'identitas_berlaku_sampai' => $this->hari(12),
+            'tempat_lahir' => 'Osaka', 'tanggal_lahir' => '1981-05-30', 'jenis_kelamin' => 'L', 'pekerjaan' => 'Konsultan', 'status_perkawinan' => 'kawin',
+            'alamat' => 'Apartemen Contoh Tower B Nomor 1203', 'rt_rw' => '001/001', 'kelurahan' => 'Baros', 'kecamatan' => 'Cimahi Tengah']);
+        $gudang = $this->berkas($j, 'PERJANJIAN', 'Pinjam pakai gudang Cibabat', $koperasi, StatusBerkas::Dijadwalkan, 2, 'staf2', ['nilai_transaksi' => 120_000_000]);
+        $a = $this->akta($j, $gudang, 'Perjanjian Pinjam Pakai Gudang', $saksi, [[$kenji], [$rudi, Kedudukan::MewakiliBadan, $koperasi, 'selaku Direktur Utama']], 120_000_000);
+        $a->update(['status' => StatusAkta::Dijadwalkan, 'jadwal_at' => today()->addDays(2)->setTime(10, 30)]);
+        app(PenyusunDraf::class)->buat($a, $this->template);
+        $this->dokumen($kenji, 'paspor', 'Paspor Kenji Tanaka (habis berlaku)', $this->hari(12));
+
         $surat = app(PenomoranSurat::class);
         $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'legalisasi', 'tanggal' => $this->hari(10), 'judul' => 'Surat Perjanjian Jual Beli Hasil Panen', 'para_pihak' => "Wawan Setiawan\nRudi Hermawan", 'jumlah_lembar' => 3]);
         $surat->catat(['jabatan_id' => $j->id, 'jenis' => 'fotokopi', 'tanggal' => $this->hari(4), 'judul' => 'Ijazah dan transkrip nilai', 'para_pihak' => 'Andi Saputra', 'jumlah_lembar' => 4]);
@@ -203,6 +296,20 @@ class DemoSeeder extends Seeder
             ['jenis' => 'titipan', 'uraian' => 'Pendaftaran SABU dan NIB', 'jumlah' => 500_000],
         ]);
         $t->pembayaran()->create(['tanggal' => $this->hari(38), 'jumlah' => 4_000_000, 'metode' => 'transfer']);
+        $cv->danaTitipan()->create(['tanggal' => $this->hari(38), 'arah' => 'masuk', 'jumlah' => 500_000, 'uraian' => 'Titipan biaya pendaftaran SABU dan NIB']);
+        $cv->danaTitipan()->create(['tanggal' => $this->hari(37), 'arah' => 'keluar', 'jumlah' => 500_000, 'uraian' => 'Pembayaran PNBP pendaftaran CV']);
+
+        // Yayasan: tagihan dibayar tunai sebagian.
+        $t = $this->tagihan($yys, 26, [
+            ['jenis' => 'honorarium', 'uraian' => 'Honorarium akta pendirian yayasan', 'jumlah' => 4_000_000],
+            ['jenis' => 'titipan', 'uraian' => 'PNBP pengesahan badan hukum yayasan', 'jumlah' => 1_000_000],
+        ]);
+        $t->pembayaran()->create(['tanggal' => $this->hari(25), 'jumlah' => 2_500_000, 'metode' => 'tunai']);
+        TandaTerima::create(['berkas_id' => $yys->id, 'arah' => 'masuk', 'tanggal' => $this->hari(31), 'pihak' => 'Hj. Siti Aminah',
+            'daftar_dokumen' => "KTP para pendiri (fotokopi)\nBukti pemesanan nama yayasan\nDaftar kekayaan awal yayasan"]);
+        foreach ([['Ajukan pengesahan yayasan di AHU', 'staf2', 1, false], ['Serahkan SK pengesahan ke klien', 'staf2', 7, false]] as [$judul, $pic, $hari, $selesai]) {
+            Tugas::create(['berkas_id' => $yys->id, 'judul' => $judul, 'user_id' => $this->u[$pic]->id, 'jatuh_tempo' => today()->addDays($hari)->toDateString()]);
+        }
     }
 
     /** Notaris dan PPAT di Kabupaten Bandung Barat: PPJB tanah, waris, kuasa; satu akta memperlihatkan larangan saksi keluarga. */
@@ -233,7 +340,10 @@ class DemoSeeder extends Seeder
         $this->nomori($j, $this->akta($j, $ppjb, 'Perjanjian Pengikatan Jual Beli', $saksi, [[$asep], [$euis], [$taufik]], 450_000_000), 38, '10:00');
         $b = $this->berkas($j, 'WARIS', 'Keterangan waris almarhum H. Dadang', $rini, StatusBerkas::Selesai, 28, 'staf');
         $this->nomori($j, $this->akta($j, $b, 'Keterangan Hak Waris', $saksi, [[$rini], [$dadan]]), 22, '13:00');
-        $b = $this->berkas($j, 'KUASA', 'Kuasa mengurus sertipikat Cibodas', $euis, StatusBerkas::Selesai, 10, 'staf');
+        $b = $this->berkas($j, 'PKM-DIRI', 'Pendirian Perkumpulan Petani Kopi Lembang', $asep, StatusBerkas::PascaAkta, 19, 'staf');
+        $this->nomori($j, $this->akta($j, $b, 'Pendirian Perkumpulan Petani Kopi Lembang', $saksi, [[$asep], [$taufik], [$dadan]]), 15, '14:00');
+        // Jasa hukum cuma-cuma (Pasal 37 UUJN) untuk warga kurang mampu.
+        $b = $this->berkas($j, 'KUASA', 'Kuasa mengurus sertipikat Cibodas', $euis, StatusBerkas::Selesai, 10, 'staf', ['cuma_cuma' => true]);
         $this->nomori($j, $this->akta($j, $b, 'Kuasa', $saksi, [[$euis]]), 8, '09:00');
 
         // Dijadwalkan besok: saksi kantor bersaudara dengan penghadap, sehingga pemeriksaan kesiapan menolak penomoran.
@@ -251,6 +361,20 @@ class DemoSeeder extends Seeder
             ['jenis' => 'honorarium', 'uraian' => 'Honorarium akta PPJB tanah', 'jumlah' => 4_500_000],
             ['jenis' => 'titipan', 'uraian' => 'Pengecekan sertipikat dan ZNT', 'jumlah' => 350_000],
         ]);
+        TandaTerima::create(['berkas_id' => $ppjb->id, 'arah' => 'masuk', 'tanggal' => $this->hari(42), 'pihak' => 'Asep Sunandar',
+            'daftar_dokumen' => "Sertipikat Hak Milik No. 567/Cibodas (asli)\nSPPT PBB 2022-2026 (asli)\nKTP dan KK suami istri (fotokopi)"]);
+        $this->dokumen($asep, 'sertipikat', 'SHM No. 567/Cibodas (pindaian)');
+        $this->dokumen($taufik, 'ktp', 'KTP Taufik Hidayat');
+        $this->dokumen($fikri, 'ktp', 'KTP Fikri Rahman');
+        foreach ([['Ganti saksi Nadia Rahma (bersaudara dengan penghadap)', 'staf', 0, false], ['Konfirmasi jadwal dengan Taufik Hidayat', 'staf2', 0, true]] as [$judul, $pic, $hari, $selesai]) {
+            Tugas::create(['berkas_id' => $kerja->id, 'judul' => $judul, 'user_id' => $this->u[$pic]->id, 'jatuh_tempo' => today()->addDays($hari)->toDateString(),
+                'selesai_at' => $selesai ? now() : null, 'catatan' => $selesai ? null : 'Temuan R-04 pada pemeriksaan kesiapan (Pasal 40 UUJN).']);
+        }
+
+        // Cuti notaris: protokol diserahkan sementara kepada notaris pengganti, lalu kembali.
+        SerahTerimaProtokol::create(['arah' => 'keluar', 'notaris_asal' => 'Ayu Pratiwi Handayani, S.H., M.Kn.', 'notaris_penerima' => 'Rahmat Hidayat, S.H. (notaris pengganti, fiktif)',
+            'alasan' => 'cuti', 'tanggal' => today()->subMonths(5)->toDateString(), 'nomor_berita_acara' => 'BA-01/AP/'.today()->subMonths(5)->year,
+            'tahun_awal' => 2020, 'tahun_akhir' => today()->subMonths(5)->year, 'jumlah_buku' => 14, 'ada_protokol_25_tahun' => false, 'catatan' => 'Cuti melahirkan tiga bulan. '.self::LABEL]);
     }
 
     private function jabatan(string $user, array $data): Jabatan
@@ -293,13 +417,122 @@ class DemoSeeder extends Seeder
         return $a;
     }
 
-    private function nomori(Jabatan $j, Akta $a, int $hariLalu, string $jam): void
+    private function nomori(Jabatan $j, Akta $a, int $hariLalu, string $jam, array $hasil = []): Akta
     {
         $notaris = $j->user;
         Auth::setUser($notaris);
         app(PenyusunDraf::class)->buat($a, $this->template)->update(['final' => true]);
-        app(PenomoranAkta::class)->beriNomor($a, today()->subDays($hariLalu), $jam, $notaris, ['dibacakan' => true]);
+        app(PenomoranAkta::class)->beriNomor($a, today()->subDays($hariLalu), $jam, $notaris, $hasil + ['dibacakan' => true]);
         Auth::setUser($this->u['notaris']);
+
+        return $a->refresh();
+    }
+
+    /** Pihak, daftar periksa dokumen sesuai tahap berkas, dan kelengkapan minuta. */
+    private function lengkapiBerkas(): void
+    {
+        foreach (Berkas::with(['jenisLayanan', 'checklist', 'akta.penghadap'])->get() as $b) {
+            $peran = self::PERAN[$b->jenisLayanan->kode] ?? ['Pihak'];
+            $penghadap = $b->akta->flatMap->penghadap;
+            if ($penghadap->isEmpty()) {
+                BerkasPihak::create(['berkas_id' => $b->id, 'subjek_id' => $b->klien_id, 'peran' => $peran[0]]);
+            }
+            foreach ($penghadap->values() as $i => $p) {
+                BerkasPihak::firstOrCreate(['berkas_id' => $b->id, 'subjek_id' => $p->mewakili_id ?? $p->subjek_id], ['peran' => $peran[$i] ?? end($peran)]);
+            }
+
+            $tahap = $b->status;
+            foreach ($b->checklist->values() as $i => $c) {
+                $status = match (true) {
+                    in_array($tahap, [StatusBerkas::Selesai, StatusBerkas::PascaAkta, StatusBerkas::Ditandatangani], true) => 'diverifikasi',
+                    $tahap === StatusBerkas::Dijadwalkan => $i === $b->checklist->count() - 1 ? 'diterima' : 'diverifikasi',
+                    default => $i % 3 === 0 ? 'diterima' : 'diminta',
+                };
+                $c->update(['status' => $status]);
+            }
+        }
+
+        // Minuta: halaman buku repertorium fisik dicatat, lampiran dan sidik jari lengkap kecuali akta terbaru tiap notaris.
+        foreach (Jabatan::all() as $j) {
+            $buku = BukuFisik::create(['jabatan_id' => $j->id, 'jenis_daftar' => 'repertorium', 'nomor_buku' => 'REP-'.today()->year.'/1', 'jumlah_halaman' => 200,
+                'tanggal_paraf_mpd' => today()->startOfYear()->subDays(20)->toDateString(), 'mulai_dipakai' => today()->startOfYear()->toDateString(), 'aktif' => true]);
+            BukuFisik::create(['jabatan_id' => $j->id, 'jenis_daftar' => 'klapper', 'nomor_buku' => 'KLP-'.today()->year.'/1', 'jumlah_halaman' => 100,
+                'tanggal_paraf_mpd' => today()->startOfYear()->subDays(20)->toDateString(), 'mulai_dipakai' => today()->startOfYear()->toDateString(), 'aktif' => true]);
+            $akta = Akta::query()->where('jabatan_id', $j->id)->bernomor()->orderBy('nomor_urut')->get();
+            foreach ($akta as $i => $a) {
+                $terbaru = $i === $akta->count() - 1;
+                Akta::query()->whereKey($a->id)->update(['buku_fisik_id' => $terbaru ? null : $buku->id, 'halaman_buku' => $terbaru ? null : $a->nomor_urut + 40,
+                    'minuta_lampiran_lengkap' => ! $terbaru, 'minuta_sidik_jari_lengkap' => ! $terbaru]);
+            }
+        }
+    }
+
+    /** Penjilidan minuta bulan lalu, buku daftar fisik lain, dan serah terima protokol notaris yang sudah meninggal. */
+    private function lengkapiProtokol(): void
+    {
+        $lalu = today()->subMonthNoOverflow();
+        foreach (Jabatan::all() as $j) {
+            $jilid = rescue(fn () => app(PenjilidanMinuta::class)->susun($j->id, $lalu->year, $lalu->month, $this->lokasi[$j->kode] ?? null), [], false);
+            if ($j->kode !== 'AP') {
+                foreach ($jilid as $x) {
+                    $x->update(['dijilid_at' => today()->startOfMonth()->addDays(min(4, today()->day - 1))->setTime(14, 0)]);
+                }
+            }
+        }
+
+        SerahTerimaProtokol::create(['arah' => 'masuk', 'notaris_asal' => 'R. Soetisna Wiradinata, S.H. (almarhum, fiktif)', 'notaris_penerima' => 'Dr. Rina Kartika, S.H., M.Kn.',
+            'alasan' => 'meninggal', 'tanggal' => '2019-03-18', 'nomor_berita_acara' => 'BA-07/MPD-KB/III/2019', 'tahun_awal' => 1984, 'tahun_akhir' => 2018,
+            'jumlah_buku' => 126, 'ada_protokol_25_tahun' => true, 'catatan' => 'Protokol berumur 25 tahun atau lebih disimpan di gudang G-01. '.self::LABEL]);
+    }
+
+    /** Contoh riwayat penggunaan AI (fitur AI di situs demo tetap mati). */
+    private function logAi(): void
+    {
+        $budi = Subjek::query()->where('nama', 'Budi Santoso')->first();
+        $pt = Berkas::query()->where('judul', 'Pendirian PT Sinar Kopi Priangan')->first();
+        foreach ([
+            ['ekstraksi', 'berhasil', 'KTP Budi Santoso dibaca; 14 kolom diisi, 1 perlu dicek (RT/RW).', 1450, 380, 0.00410, 12],
+            ['pemeriksa', 'berhasil', 'Draf akta pendirian PT: 2 temuan (terbilang modal, nama penghadap kedua).', 6200, 640, 0.01230, 5],
+            ['pemeriksa', 'ditolak', null, 0, 0, 0, 3],
+        ] as [$fitur, $status, $ringkasan, $in, $out, $biaya, $hari]) {
+            AiPermintaan::create(['user_id' => $this->u['staf']->id, 'fitur' => $fitur, 'berkas_id' => $pt?->id, 'subjek_ai_type' => $fitur === 'ekstraksi' ? Subjek::class : null,
+                'subjek_ai_id' => $fitur === 'ekstraksi' ? $budi?->id : null, 'model' => $status === 'ditolak' ? null : 'gpt-4.1-mini', 'input_tokens' => $in, 'output_tokens' => $out,
+                'biaya_usd' => $biaya, 'status' => $status, 'ringkasan' => $ringkasan, 'galat' => $status === 'ditolak' ? 'Berkas sangat rahasia: AI tidak dipakai.' : null,
+                'created_at' => today()->subDays($hari)->setTime(10, 15), 'updated_at' => today()->subDays($hari)->setTime(10, 15)]);
+        }
+    }
+
+    /** Dokumen pindaian contoh berupa PDF satu halaman bertanda DATA CONTOH. */
+    private function dokumen($pemilik, string $jenis, string $judul, ?string $berlaku = null): void
+    {
+        $path = 'contoh/'.str($judul)->slug().'.pdf';
+        Storage::disk('local')->put($path, $this->pdfContoh($judul));
+        Dokumen::create(['dokumenable_type' => $pemilik::class, 'dokumenable_id' => $pemilik->id, 'jenis' => $jenis, 'judul' => $judul, 'path' => $path,
+            'nama_asli' => basename($path), 'berlaku_sampai' => $berlaku, 'uploaded_by' => $this->u['staf']->id]);
+    }
+
+    private function pdfContoh(string $judul): string
+    {
+        $esc = fn (string $t) => str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $t);
+        $isi = "BT /F1 28 Tf 72 740 Td (DATA CONTOH) Tj ET\nBT /F1 16 Tf 72 700 Td (".$esc($judul).") Tj ET\n"
+            ."BT /F1 11 Tf 72 676 Td (Dokumen fiktif untuk peragaan Ruci Notaria. Bukan dokumen sebenarnya.) Tj ET\n"
+            ."0.8 0.6 0.2 RG 4 w 60 640 m 535 640 l S\n";
+        $obj = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>', '<< /Length '.strlen($isi)." >>\nstream\n".$isi.'endstream'];
+        $pdf = "%PDF-1.4\n";
+        $ofs = [];
+        foreach ($obj as $i => $o) {
+            $ofs[] = strlen($pdf);
+            $pdf .= ($i + 1)." 0 obj\n".$o."\nendobj\n";
+        }
+        $xref = strlen($pdf);
+        $pdf .= "xref\n0 ".(count($obj) + 1)."\n0000000000 65535 f \n";
+        foreach ($ofs as $o) {
+            $pdf .= sprintf("%010d 00000 n \n", $o);
+        }
+
+        return $pdf."trailer\n<< /Size ".(count($obj) + 1)." /Root 1 0 R >>\nstartxref\n".$xref."\n%%EOF\n";
     }
 
     private function tagihan(Berkas $b, int $hariLalu, array $items): Tagihan

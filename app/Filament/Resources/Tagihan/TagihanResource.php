@@ -7,6 +7,7 @@ use App\Filament\Concerns\WithRole;
 use App\Filament\Resources\Tagihan\Pages\CreateTagihan;
 use App\Filament\Resources\Tagihan\Pages\EditTagihan;
 use App\Filament\Resources\Tagihan\Pages\ListTagihan;
+use App\Filament\Resources\Tagihan\Pages\ViewTagihan;
 use App\Models\Berkas;
 use App\Models\Tagihan;
 use App\Models\TagihanItem;
@@ -54,7 +55,7 @@ class TagihanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return static::canFinance();
+        return (bool) static::role()?->canViewFinance();
     }
 
     public static function canCreate(): bool
@@ -147,6 +148,7 @@ class TagihanResource extends Resource
         return [
             'index' => ListTagihan::route('/'),
             'create' => CreateTagihan::route('/buat'),
+            'view' => ViewTagihan::route('/{record}/lihat'),
             'edit' => EditTagihan::route('/{record}'),
         ];
     }

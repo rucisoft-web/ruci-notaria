@@ -7,6 +7,7 @@ use App\Filament\Concerns\WithRole;
 use App\Filament\Resources\SuratBawahTangan\Pages\CreateSuratBawahTangan;
 use App\Filament\Resources\SuratBawahTangan\Pages\EditSuratBawahTangan;
 use App\Filament\Resources\SuratBawahTangan\Pages\ListSuratBawahTangan;
+use App\Filament\Resources\SuratBawahTangan\Pages\ViewSuratBawahTangan;
 use App\Models\Berkas;
 use App\Models\BukuFisik;
 use App\Models\Jabatan;
@@ -148,6 +149,7 @@ class SuratBawahTanganResource extends Resource
         return [
             'index' => ListSuratBawahTangan::route('/'),
             'create' => CreateSuratBawahTangan::route('/create'),
+            'view' => ViewSuratBawahTangan::route('/{record}'),
             'edit' => EditSuratBawahTangan::route('/{record}/edit'),
         ];
     }

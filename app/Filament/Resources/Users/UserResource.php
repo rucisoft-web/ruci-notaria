@@ -51,7 +51,7 @@ class UserResource extends Resource
             TextInput::make('email')->label('Email')->email()->required()->unique(ignoreRecord: true),
             TextInput::make('phone')->label('Telepon'),
             Select::make('role')->label('Peran')->options(Role::class)->required()->default(Role::Staf)
-                ->disableOptionWhen(fn (string $value) => $value === Role::Notaris->value && ! auth()->user()?->role?->isNotaris())
+                ->disableOptionWhen(fn (string $value) => $value === Role::Tamu->value || ($value === Role::Notaris->value && ! auth()->user()?->role?->isNotaris()))
                 ->helperText('Notaris: semua termasuk penomoran. Staf: berkas & akta. Keuangan: tagihan. Arsiparis: protokol. Admin TI: pengguna & pengaturan, tanpa isi berkas.'),
             TextInput::make('password')->label('Kata sandi')->password()->revealable()->minLength(10)
                 ->required(fn (?User $record) => ! $record?->exists)->dehydrated(fn ($state) => filled($state))

@@ -35,7 +35,7 @@ class CetakController extends Controller
 
     private function bolehKeuangan(Tagihan $tagihan): void
     {
-        abort_unless($this->user()->role->canFinance(), 403);
+        abort_unless($this->user()->role->canViewFinance(), 403);
         $this->bolehLihatBerkas($tagihan->berkas_id);
     }
 

@@ -23,7 +23,7 @@ class TagihanRelationManager extends RelationManager
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return (bool) auth()->user()?->role?->canFinance();
+        return (bool) auth()->user()?->role?->canViewFinance();
     }
 
     public function form(Schema $schema): Schema
@@ -47,6 +47,6 @@ class TagihanRelationManager extends RelationManager
             ->headerActions([CreateAction::make()->label('Buat tagihan')
                 ->successRedirectUrl(fn (Tagihan $record) => TagihanResource::getUrl('edit', ['record' => $record]))])
             ->recordActions([Action::make('buka')->label('Buka')->icon(Heroicon::OutlinedArrowTopRightOnSquare)
-                ->url(fn (Tagihan $r) => TagihanResource::getUrl('edit', ['record' => $r]))]);
+                ->url(fn (Tagihan $r) => TagihanResource::getUrl(TagihanResource::canEdit($r) ? 'edit' : 'view', ['record' => $r]))]);
     }
 }

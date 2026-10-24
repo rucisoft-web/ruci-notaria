@@ -30,20 +30,20 @@
     <meta name="twitter:description" content="{{ $ringkas }}">
     <meta name="twitter:image" content="{{ asset('img/og-ruci-notaria.png') }}">
 
-    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v={{ @filemtime(public_path('css/landing.css')) }}">
 </head>
 <body>
 <header class="kepala">
     <div class="wadah kepala-isi">
         <a href="{{ url('/') }}" class="merek">
-            <img src="{{ asset('favicon.svg') }}" alt="" width="32" height="32">
-            <span>Ruci Notaria</span>
+            <img src="{{ asset('img/logo/ruci-notaria.svg') }}" alt="Ruci Notaria" width="188" height="40">
         </a>
         <nav class="navigasi" aria-label="Utama">
             <a href="#fitur">Fitur</a>
             <a href="#demo">Data contoh</a>
             <a href="#keamanan">Keamanan &amp; AI</a>
-            <a href="#tanya">Tanya jawab</a>
+            <a href="{{ route('panduan.mengapa') }}">Mengapa Ruci Notaria</a>
+            <a href="{{ route('panduan.penggunaan') }}">Panduan</a>
         </nav>
         <a href="{{ url('/app/login') }}" class="tombol tombol-garis kecil">Masuk</a>
     </div>
@@ -64,10 +64,10 @@
                             <button type="submit" class="tombol tombol-utama">Coba sebagai tamu</button>
                         </form>
                     @endif
-                    <a href="#fitur" class="tombol tombol-garis">Lihat fiturnya</a>
+                    <a href="{{ route('panduan.mengapa') }}" class="tombol tombol-garis">Mengapa Ruci Notaria?</a>
                 </div>
                 @if ($tamu)
-                    <p class="catatan-kecil">Tanpa mendaftar. Anda masuk ke kantor fiktif berisi <b>data contoh 3 notaris</b>.</p>
+                    <p class="catatan-kecil">Tanpa mendaftar. Anda masuk ke kantor fiktif berisi <b>data contoh 3 notaris</b>, hanya untuk dilihat. <a href="{{ route('panduan.penggunaan') }}">Baca panduan penggunaan</a>.</p>
                 @endif
             </div>
             <figure class="bingkai pembuka-gambar">
@@ -245,7 +245,7 @@
                         <button type="submit" class="tombol tombol-emas">Masuk sebagai tamu</button>
                     </form>
                 </div>
-                <p class="catatan-kecil tengah terang">Akun tamu dipakai bersama pengunjung lain dan tidak dapat mengubah pengaturan, pengguna, atau memakai AI. Jangan memasukkan data pribadi sungguhan.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
+                <p class="catatan-kecil tengah terang">Akun tamu dipakai bersama pengunjung lain dan hanya dapat melihat: tombol tambah, ubah, hapus, dan beri nomor disembunyikan, dan data tidak dapat diubah. Jangan memasukkan data pribadi sungguhan.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
             @endif
         </div>
     </section>

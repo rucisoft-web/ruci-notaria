@@ -44,10 +44,15 @@ trait WithRole
         return (bool) static::role()?->canArchive();
     }
 
-    /** Tamu situs demo tidak pernah mendapat hak pengaturan, walau perannya notaris. */
     protected static function canAdminister(): bool
     {
-        return (bool) static::role()?->canAdminister() && ! static::user()?->isTamu();
+        return (bool) static::role()?->canAdminister();
+    }
+
+    /** Tamu situs demo: melihat semua layar, tidak dapat mengubah apa pun. */
+    protected static function isTamu(): bool
+    {
+        return (bool) static::role()?->isTamu();
     }
 
     /** @return array<int, string> */
