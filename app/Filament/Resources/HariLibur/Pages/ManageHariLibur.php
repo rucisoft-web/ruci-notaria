@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Filament\Resources\HariLibur\Pages;
+
+use App\Filament\Resources\HariLibur\HariLiburResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ManageRecords;
+
+class ManageHariLibur extends ManageRecords
+{
+    protected static string $resource = HariLiburResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [CreateAction::make()];
+    }
+}

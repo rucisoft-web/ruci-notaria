@@ -1,0 +1,84 @@
+/* Ruci Notaria: dasbor, buku daftar, dan hasil pemeriksaan. Tanpa pustaka eksternal. */
+:root {
+    --nt-teal: #174f49;
+    --nt-gold: #b8893a;
+    --nt-card: #ffffff;
+    --nt-text: #1f2d2b;
+    --nt-muted: #687b78;
+    --nt-line: #e2e8e7;
+    --nt-track: #edf2f1;
+    --nt-good: #2e7d32;
+    --nt-warn: #ef6c00;
+    --nt-bad: #c62828;
+}
+.dark {
+    --nt-card: rgb(24 24 27);
+    --nt-text: #e5e7eb;
+    --nt-muted: #9aaba8;
+    --nt-line: rgb(63 63 70);
+    --nt-track: rgb(39 39 42);
+}
+.nt-muted { color: var(--nt-muted); font-size: .85rem; }
+
+.nt-dash { color: var(--nt-text); }
+.nt-dash a.nt-row, .nt-dash a.nt-kpi { color: inherit; text-decoration: none; }
+.nt-dash a.nt-row:hover b { text-decoration: underline; }
+.nt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.nt-header p { margin: 2px 0 0; color: var(--nt-muted); font-size: .9rem; }
+.nt-eyebrow { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--nt-gold); font-weight: 600; }
+
+.nt-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.nt-kpi { display: block; background: var(--nt-card); border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 6px #0000000f; border-left: 4px solid #607d8b; }
+.nt-kpi span { display: block; color: var(--nt-muted); font-size: .75rem; margin-bottom: 4px; }
+.nt-kpi strong { font-size: 1.4rem; }
+.nt-kpi.good { border-left-color: var(--nt-good); }
+.nt-kpi.warning { border-left-color: var(--nt-warn); }
+.nt-kpi.danger { border-left-color: var(--nt-bad); }
+
+.nt-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.nt-panel { background: var(--nt-card); border-radius: 12px; padding: 16px; box-shadow: 0 1px 6px #0000000f; min-width: 0; }
+.nt-panel.wide { grid-column: span 2; }
+.nt-panel h3 { font-size: .95rem; font-weight: 600; margin: 0 0 12px; }
+.nt-panel h3 small { font-weight: 400; color: var(--nt-muted); font-size: .72rem; margin-left: 6px; }
+@media (max-width: 1100px) { .nt-grid { grid-template-columns: 1fr; } .nt-panel.wide { grid-column: auto; } }
+
+.nt-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--nt-line); font-size: .85rem; }
+.nt-row:last-child { border-bottom: 0; }
+.nt-row b { display: block; font-weight: 600; }
+.nt-row small { display: block; color: var(--nt-muted); font-size: .75rem; }
+.nt-row small a { text-decoration: underline !important; }
+.nt-dot { width: 10px; height: 10px; border-radius: 50%; background: #78909c; }
+.nt-dot.terlambat { background: var(--nt-bad); } .nt-dot.segera { background: var(--nt-warn); } .nt-dot.terjadwal { background: var(--nt-good); }
+.nt-due { text-align: right; font-weight: 600; white-space: nowrap; }
+.nt-due.terlambat { color: var(--nt-bad); }
+.nt-time { font-weight: 700; font-size: 1rem; text-align: center; min-width: 58px; color: var(--nt-teal); }
+.dark .nt-time { color: #74b5ad; }
+
+.nt-bar { display: grid; grid-template-columns: 150px 1fr 32px; gap: 8px; align-items: center; margin: 8px 0; font-size: .8rem; }
+.nt-bar .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nt-bar .track { height: 10px; background: var(--nt-track); border-radius: 8px; overflow: hidden; }
+.nt-bar .fill { display: block; height: 100%; background: linear-gradient(90deg, var(--nt-teal), #45958c); border-radius: 8px; }
+.nt-bar b { text-align: right; }
+
+/* Hasil pemeriksaan kesiapan akta dan draf. */
+.nt-ok { color: var(--nt-good); font-weight: 600; }
+.nt-temuan { list-style: none; margin: 0; padding: 0; font-size: .875rem; }
+.nt-temuan li { padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; border-left: 4px solid #90a4ae; background: var(--nt-track); }
+.nt-temuan li.kritis { border-left-color: var(--nt-bad); }
+.nt-temuan li.perlu_dicek { border-left-color: var(--nt-warn); }
+.nt-temuan li.saran { border-left-color: #1e88e5; }
+.nt-temuan b { margin-right: 4px; }
+.nt-temuan small { color: var(--nt-muted); margin-right: 4px; }
+
+/* Buku daftar dan kesiapan pemeriksaan. */
+.nt-filter { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
+.nt-filter label { display: flex; flex-direction: column; font-size: .75rem; color: var(--nt-muted); gap: 4px; }
+.nt-filter select { border-radius: 8px; border: 1px solid var(--nt-line); background: var(--nt-card); color: var(--nt-text); padding: 6px 30px 6px 10px; font-size: .875rem; }
+.nt-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.nt-table th { text-align: left; font-weight: 600; color: var(--nt-muted); border-bottom: 2px solid var(--nt-line); padding: 6px 8px; }
+.nt-table td { border-bottom: 1px solid var(--nt-line); padding: 6px 8px; vertical-align: top; }
+.nt-table td.num { text-align: right; white-space: nowrap; }
+.nt-check { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--nt-line); }
+.nt-check .n { font-size: 1.3rem; font-weight: 700; text-align: center; color: var(--nt-good); }
+.nt-check .n.ada { color: var(--nt-bad); }
+.nt-check small { color: var(--nt-muted); }
