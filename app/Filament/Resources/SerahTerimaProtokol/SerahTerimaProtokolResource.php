@@ -65,7 +65,7 @@ class SerahTerimaProtokolResource extends Resource
                 TextColumn::make('alasan')->label('Alasan')->formatStateUsing(fn ($state) => SerahTerimaProtokol::ALASAN[$state] ?? $state)->wrap(),
                 TextColumn::make('notaris_asal')->label('Dari'),
                 TextColumn::make('notaris_penerima')->label('Kepada'),
-                TextColumn::make('rentang')->label('Tahun')->state(fn ($r) => trim($r->tahun_awal.' – '.$r->tahun_akhir, ' –')),
+                TextColumn::make('rentang')->label('Tahun')->state(fn (SerahTerimaProtokol $record) => trim($record->tahun_awal.' – '.$record->tahun_akhir, ' –')),
                 IconColumn::make('ada_protokol_25_tahun')->label('≥ 25 th')->boolean(),
             ])
             ->recordActions([EditAction::make()]);

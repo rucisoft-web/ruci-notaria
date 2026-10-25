@@ -40,7 +40,7 @@ p { margin: 0 0 1em; }
 .kepala { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, .94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--garis); }
 .kepala-isi { display: flex; align-items: center; gap: 24px; height: 64px; }
 .merek { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: var(--biru-tua); text-decoration: none; }
-.navigasi { display: flex; gap: 22px; margin-left: auto; }
+.navigasi { display: flex; gap: 18px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
 .navigasi a { color: var(--redup); text-decoration: none; font-size: .95rem; }
 .navigasi a:hover { color: var(--biru); }
 
@@ -140,3 +140,4 @@ details p { margin: .8em 0 0; color: var(--redup); }
     .aksi .tombol, .aksi form { width: 100%; }
     .aksi form .tombol { width: 100%; }
 }
+.merek img { height: 40px; width: auto; }

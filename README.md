@@ -58,12 +58,14 @@ php artisan serve
 
 Buka `http://localhost:8000/app`. Data contoh berisi **tiga notaris fiktif** (Kota Bandung, Kota Cimahi, Kabupaten Bandung Barat) dan diberi label DATA CONTOH di setiap layar dan cetakan. Akun: `notaris@`, `notaris2@`, `notaris3@`, `staf@`, `staf2@`, `keuangan@`, `arsip@`, `admin@notaria.demo` dengan sandi `NOTARIA_DEMO_PASSWORD` (bawaan `Demo#2026notaria`), atau tombol **Masuk sebagai tamu** di halaman login.
 
+Halaman **Mengapa Ruci Notaria** (`/mengapa-ruci-notaria`) dan **Panduan penggunaan** (`/panduan`) dapat dibuka tanpa login, ditautkan dari form login, dan juga tersedia di menu Panduan di dalam aplikasi. Tangkapan layarnya ada di `public/img/panduan/`, dan logo di `public/img/logo/`.
+
 ### Situs demo dan halaman depan
 
 | Variabel | Fungsi |
 |---|---|
 | `NOTARIA_DEMO=true` | Muat data contoh, tampilkan pita dan tanda air DATA CONTOH |
-| `NOTARIA_DEMO_TAMU=true` | Tombol "Masuk sebagai tamu" (akun notaris contoh tanpa pengaturan, profil, dan AI) |
+| `NOTARIA_DEMO_TAMU=true` | Tombol "Masuk sebagai tamu" (peran Tamu: hanya melihat seluruh data, tombol ubah disembunyikan, dan setiap penyimpanan ditolak) |
 | `NOTARIA_DEMO_RESET_HARIAN=true` | Kembalikan data contoh setiap hari pukul 02.00 |
 | `NOTARIA_LANDING=true` | Halaman depan `/` berisi penjelasan fitur, siap dibagikan di LinkedIn (Open Graph 1200×627) |
 | `NOTARIA_KONTAK` | Tautan tombol "Hubungi kami" di halaman depan |

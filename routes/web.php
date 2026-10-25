@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\CetakController;
+use App\Http\Controllers\PanduanController;
 use App\Http\Controllers\TamuController;
 use App\Http\Controllers\UnduhController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => config('notaria.landing') ? view('landing') : redirect('/app'))->name('beranda');
 Route::post('/masuk-tamu', [TamuController::class, 'masuk'])->name('tamu.masuk')->middleware('throttle:20,1');
+Route::get('/tamu/notaris/{kode}', [TamuController::class, 'ganti'])->name('tamu.notaris')->middleware('auth');
+Route::get('/mengapa-ruci-notaria', [PanduanController::class, 'mengapa'])->name('panduan.mengapa');
+Route::get('/panduan', [PanduanController::class, 'penggunaan'])->name('panduan.penggunaan');
 Route::get('/login', fn () => redirect('/app/login'))->name('login');
 
 Route::middleware('auth')->group(function () {

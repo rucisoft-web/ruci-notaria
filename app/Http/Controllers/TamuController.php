@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Jabatan;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +13,9 @@ use Illuminate\Support\Facades\Auth;
 class TamuController extends Controller
 {
     public const EMAIL = 'tamu@notaria.demo';
+
+    /** Kunci sesi notaris contoh yang dipilih tamu (lihat Jabatan::utama()). */
+    public const SESI_NOTARIS = 'tamu.jabatan_id';
 
     public static function tersedia(): bool
     {
@@ -25,7 +30,30 @@ class TamuController extends Controller
 
         Auth::login($tamu);
         $request->session()->regenerate();
+        $this->pilih($request, $request->string('notaris')->toString());
 
         return redirect('/app');
+    }
+
+    /** Mengganti notaris contoh dari pita tamu di atas panel. */
+    public function ganti(Request $request, string $kode): RedirectResponse
+    {
+        abort_unless(static::tersedia() && $request->user()?->isTamu(), 404);
+        $this->pilih($request, $kode);
+
+        return redirect()->back(fallback: '/app');
+    }
+
+    /** @return Collection<int, Jabatan> */
+    public static function notarisContoh(): Collection
+    {
+        return Jabatan::query()->where('is_active', true)->where('jenis', 'notaris')->orderBy('id')->get();
+    }
+
+    private function pilih(Request $request, string $kode): void
+    {
+        if ($jabatan = static::notarisContoh()->firstWhere('kode', $kode)) {
+            $request->session()->put(self::SESI_NOTARIS, $jabatan->id);
+        }
     }
 }

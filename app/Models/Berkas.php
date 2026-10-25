@@ -63,7 +63,7 @@ class Berkas extends Model
             return $query->whereRaw('1 = 0');
         }
 
-        if ($user->role === Role::Notaris) {
+        if ($user->role->seesAllFiles()) {
             return $query;
         }
 

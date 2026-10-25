@@ -30,20 +30,21 @@
     <meta name="twitter:description" content="{{ $ringkas }}">
     <meta name="twitter:image" content="{{ asset('img/og-ruci-notaria.png') }}">
 
-    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v={{ @filemtime(public_path('css/landing.css')) }}">
 </head>
 <body>
 <header class="kepala">
     <div class="wadah kepala-isi">
         <a href="{{ url('/') }}" class="merek">
-            <img src="{{ asset('favicon.svg') }}" alt="" width="32" height="32">
-            <span>Ruci Notaria</span>
+            <img src="{{ asset('img/logo/ruci-notaria.svg') }}" alt="Ruci Notaria" width="188" height="40">
         </a>
         <nav class="navigasi" aria-label="Utama">
             <a href="#fitur">Fitur</a>
             <a href="#demo">Data contoh</a>
             <a href="#keamanan">Keamanan &amp; AI</a>
-            <a href="#tanya">Tanya jawab</a>
+            <a href="{{ route('panduan.mengapa') }}">Mengapa Ruci Notaria</a>
+            <a href="{{ route('panduan.penggunaan') }}">Panduan</a>
+            <a href="https://rucisoft.id">Rucisoft.id</a>
         </nav>
         <a href="{{ url('/app/login') }}" class="tombol tombol-garis kecil">Masuk</a>
     </div>
@@ -64,10 +65,10 @@
                             <button type="submit" class="tombol tombol-utama">Coba sebagai tamu</button>
                         </form>
                     @endif
-                    <a href="#fitur" class="tombol tombol-garis">Lihat fiturnya</a>
+                    <a href="{{ route('panduan.mengapa') }}" class="tombol tombol-garis">Mengapa Ruci Notaria?</a>
                 </div>
                 @if ($tamu)
-                    <p class="catatan-kecil">Tanpa mendaftar. Anda masuk ke kantor fiktif berisi <b>data contoh 3 notaris</b>.</p>
+                    <p class="catatan-kecil">Tanpa mendaftar. Anda masuk ke kantor fiktif berisi <b>data contoh 3 notaris</b>, hanya untuk dilihat. <a href="{{ route('panduan.penggunaan') }}">Baca panduan penggunaan</a>.</p>
                 @endif
             </div>
             <figure class="bingkai pembuka-gambar">
@@ -78,29 +79,7 @@
     </section>
 
     {{-- Masalah --}}
-    <section class="bagian">
-        <div class="wadah">
-            <h2>Pekerjaan administrasi yang paling sering menyita waktu notaris</h2>
-            <div class="kisi kisi-4">
-                <article class="kartu">
-                    <h3>Nomor akta</h3>
-                    <p>Nomor ganda, celah, atau tanggal yang mundur baru ketahuan saat repertorium disusun.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Laporan bulanan</h3>
-                    <p>Repertorium, klapper, legalisasi, waarmerking, wasiat, dan surat pengantar MPD diketik ulang setiap bulan.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Tenggat</h3>
-                    <p>Pengesahan PT 60 hari, fidusia 30 hari, daftar wasiat tanggal 5, laporan MPD tanggal 15, mudah terlewat.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Uang klien</h3>
-                    <p>Honorarium dan titipan pajak atau PNBP bercampur, sehingga sulit dipertanggungjawabkan.</p>
-                </article>
-            </div>
-        </div>
-    </section>
+    @include('partials.rucisoft-alur')
 
     {{-- Fitur --}}
     <section class="bagian bagian-lembut" id="fitur">
@@ -245,7 +224,7 @@
                         <button type="submit" class="tombol tombol-emas">Masuk sebagai tamu</button>
                     </form>
                 </div>
-                <p class="catatan-kecil tengah terang">Akun tamu dipakai bersama pengunjung lain dan tidak dapat mengubah pengaturan, pengguna, atau memakai AI. Jangan memasukkan data pribadi sungguhan.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
+                <p class="catatan-kecil tengah terang">Akun tamu dipakai bersama pengunjung lain dan hanya dapat melihat: tombol tambah, ubah, hapus, dan beri nomor disembunyikan, dan data tidak dapat diubah. Jangan memasukkan data pribadi sungguhan.@if (config('notaria.demo.reset_harian')) Data dikembalikan ke keadaan awal setiap hari.@endif</p>
             @endif
         </div>
     </section>
@@ -343,7 +322,7 @@
 
 <footer class="kaki">
     <div class="wadah">
-        <p><b>Ruci Notaria</b> &middot; Aplikasi kantor notaris untuk Indonesia.</p>
+        <p><b>Ruci Notaria</b> &middot; Aplikasi kantor notaris untuk Indonesia &middot; produk <a href="https://rucisoft.id" style="color:inherit;text-decoration:underline">Rucisoft</a> &middot; <a href="https://rucisoft.id" style="color:inherit">rucisoft.id</a></p>
         <p>Aplikasi membantu kepatuhan, tetapi tidak menggantikan pertimbangan dan tanggung jawab notaris. Data pada situs demo adalah data contoh fiktif.</p>
     </div>
 </footer>

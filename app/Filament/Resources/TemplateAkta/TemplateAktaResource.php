@@ -53,7 +53,7 @@ class TemplateAktaResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return static::canWork();
+        return static::canWork() || static::isTamu();
     }
 
     public static function canCreate(): bool

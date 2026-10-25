@@ -41,7 +41,7 @@ class PermintaanPenegakHukumResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return static::isNotaris();
+        return static::isNotaris() || static::isTamu();
     }
 
     public static function canCreate(): bool

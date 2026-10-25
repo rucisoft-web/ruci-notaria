@@ -11,7 +11,6 @@ use App\Models\SuratBawahTangan;
 use App\Models\Tagihan;
 use App\Models\User;
 use App\Services\BukuDaftar;
-use App\Services\PenjilidanMinuta;
 use Database\Seeders\DemoSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -112,7 +111,6 @@ class PanelTest extends TestCase
     public function test_semua_cetakan_terbuka(): void
     {
         $akta = Akta::whereNotNull('nomor_urut')->first();
-        app(PenjilidanMinuta::class)->susun($akta->jabatan_id, 2026, 9);
         $this->sebagai('notaris');
         $berkas = Berkas::has('tagihan')->first();
         $berkas->tandaTerima()->create(['arah' => 'masuk', 'tanggal' => today(), 'pihak' => 'Hendra Wijaya', 'daftar_dokumen' => "Sertipikat asli\nKTP"]);

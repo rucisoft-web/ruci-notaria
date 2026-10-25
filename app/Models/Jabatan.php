@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\TamuController;
 use App\Models\Concerns\Auditable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -68,8 +69,12 @@ class Jabatan extends Model
         return static::query()->where('is_active', true)->orderBy('id')->pluck('nama_lengkap', 'id')->all();
     }
 
+    /** Notaris bawaan untuk formulir dan laporan. Tamu situs demo memakai notaris contoh yang dipilihnya. */
     public static function utama(): ?self
     {
-        return static::query()->where('is_active', true)->where('jenis', 'notaris')->orderBy('id')->first();
+        $pilihan = auth()->user()?->isTamu() ? session(TamuController::SESI_NOTARIS) : null;
+
+        return static::query()->where('is_active', true)->where('jenis', 'notaris')
+            ->when($pilihan, fn ($q) => $q->orderByRaw('id = ? desc', [$pilihan]))->orderBy('id')->first();
     }
 }

@@ -16,6 +16,8 @@ enum Role: string implements HasColor, HasLabel
     case Keuangan = 'keuangan';
     case Arsiparis = 'arsiparis';
     case Admin = 'admin';
+    // Pengunjung situs demo: melihat semua layar tanpa dapat mengubah data apa pun.
+    case Tamu = 'tamu';
 
     public function getLabel(): string
     {
@@ -25,6 +27,7 @@ enum Role: string implements HasColor, HasLabel
             self::Keuangan => 'Keuangan',
             self::Arsiparis => 'Arsiparis',
             self::Admin => 'Admin TI',
+            self::Tamu => 'Tamu (hanya lihat)',
         };
     }
 
@@ -36,6 +39,7 @@ enum Role: string implements HasColor, HasLabel
             self::Keuangan => 'success',
             self::Arsiparis => 'warning',
             self::Admin => 'gray',
+            self::Tamu => 'gray',
         };
     }
 
@@ -71,5 +75,29 @@ enum Role: string implements HasColor, HasLabel
     public function canAdminister(): bool
     {
         return in_array($this, [self::Notaris, self::Admin], true);
+    }
+
+    /** Hanya melihat. Semua hak mengubah (canWork, isNotaris, canFinance, canArchive, canAdminister) bernilai false. */
+    public function isTamu(): bool
+    {
+        return $this === self::Tamu;
+    }
+
+    /** Melihat seluruh berkas termasuk yang sangat rahasia: notaris, dan tamu situs demo (data fiktif). */
+    public function seesAllFiles(): bool
+    {
+        return in_array($this, [self::Notaris, self::Tamu], true);
+    }
+
+    /** Melihat tagihan, pembayaran, dan dana titipan. */
+    public function canViewFinance(): bool
+    {
+        return $this->canFinance() || $this === self::Tamu;
+    }
+
+    /** Melihat layar pengaturan dan data induk tanpa mengubahnya. */
+    public function canViewSettings(): bool
+    {
+        return $this->canAdminister() || $this === self::Tamu;
     }
 }

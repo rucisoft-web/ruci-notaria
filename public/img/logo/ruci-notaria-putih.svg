@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" role="img" aria-label="Ruci Notaria">
+  <g>
+    <rect width="64" height="64" rx="14" fill="#0b3a5c"/>
+    <circle cx="32" cy="32" r="23" fill="none" stroke="#c9963e" stroke-width="2"/>
+    <circle cx="32" cy="32" r="19.5" fill="none" stroke="#c9963e" stroke-width="1" stroke-dasharray="1.6 2.2" opacity=".8"/>
+    <path d="M25 15h14v5.5l5.5 9.5L32 50.5 19.5 30 25 20.5z" fill="#c9963e"/>
+    <path d="M25 20.5h14" stroke="#0b3a5c" stroke-width="1.6"/>
+    <circle cx="32" cy="32.5" r="2.8" fill="#0b3a5c"/>
+    <path d="M32 35.3V50" stroke="#0b3a5c" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+  <text x="78" y="36" font-family="Inter, 'Segoe UI', Roboto, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-0.5" fill="#ffffff">Ruci<tspan fill="#e0b25c" font-weight="600"> Notaria</tspan></text>
+  <text x="79" y="56" font-family="Inter, 'Segoe UI', Roboto, Arial, sans-serif" font-size="11.5" font-weight="600" letter-spacing="2.2" fill="#c9d3dd">APLIKASI KANTOR NOTARIS</text>
+</svg>
