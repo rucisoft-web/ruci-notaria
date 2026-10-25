@@ -44,6 +44,7 @@
             <a href="#keamanan">Keamanan &amp; AI</a>
             <a href="{{ route('panduan.mengapa') }}">Mengapa Ruci Notaria</a>
             <a href="{{ route('panduan.penggunaan') }}">Panduan</a>
+            <a href="https://rucisoft.id">Rucisoft.id</a>
         </nav>
         <a href="{{ url('/app/login') }}" class="tombol tombol-garis kecil">Masuk</a>
     </div>
@@ -343,7 +344,7 @@
 
 <footer class="kaki">
     <div class="wadah">
-        <p><b>Ruci Notaria</b> &middot; Aplikasi kantor notaris untuk Indonesia.</p>
+        <p><b>Ruci Notaria</b> &middot; Aplikasi kantor notaris untuk Indonesia &middot; produk <a href="https://rucisoft.id" style="color:inherit;text-decoration:underline">Rucisoft</a> &middot; <a href="https://rucisoft.id" style="color:inherit">rucisoft.id</a></p>
         <p>Aplikasi membantu kepatuhan, tetapi tidak menggantikan pertimbangan dan tanggung jawab notaris. Data pada situs demo adalah data contoh fiktif.</p>
     </div>
 </footer>

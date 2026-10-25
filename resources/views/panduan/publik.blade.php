@@ -34,6 +34,7 @@
 <footer class="rp-kaki">
     <div class="rp-wadah">
         <img src="{{ asset('img/logo/ruci-notaria.svg') }}" alt="Ruci Notaria" width="150" height="32">
+        <p>Produk <a href="https://rucisoft.id" style="color:inherit;text-decoration:underline">Rucisoft</a> &middot; <a href="https://rucisoft.id" style="color:inherit">rucisoft.id</a></p>
         <p>Aplikasi membantu kepatuhan, tetapi tidak menggantikan pertimbangan dan tanggung jawab notaris.@if (config('notaria.demo.enabled')) Gambar dan data pada situs ini adalah data contoh fiktif.@endif</p>
     </div>
 </footer>
