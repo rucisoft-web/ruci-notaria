@@ -79,29 +79,7 @@
     </section>
 
     {{-- Masalah --}}
-    <section class="bagian">
-        <div class="wadah">
-            <h2>Pekerjaan administrasi yang paling sering menyita waktu notaris</h2>
-            <div class="kisi kisi-4">
-                <article class="kartu">
-                    <h3>Nomor akta</h3>
-                    <p>Nomor ganda, celah, atau tanggal yang mundur baru ketahuan saat repertorium disusun.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Laporan bulanan</h3>
-                    <p>Repertorium, klapper, legalisasi, waarmerking, wasiat, dan surat pengantar MPD diketik ulang setiap bulan.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Tenggat</h3>
-                    <p>Pengesahan PT 60 hari, fidusia 30 hari, daftar wasiat tanggal 5, laporan MPD tanggal 15, mudah terlewat.</p>
-                </article>
-                <article class="kartu">
-                    <h3>Uang klien</h3>
-                    <p>Honorarium dan titipan pajak atau PNBP bercampur, sehingga sulit dipertanggungjawabkan.</p>
-                </article>
-            </div>
-        </div>
-    </section>
+    @include('partials.rucisoft-alur')
 
     {{-- Fitur --}}
     <section class="bagian bagian-lembut" id="fitur">
